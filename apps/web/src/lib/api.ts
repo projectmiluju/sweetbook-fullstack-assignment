@@ -1,0 +1,105 @@
+import { findMockCohort, findMockStudent, mockCohorts } from "@/lib/mock-data";
+
+export interface CohortSummary {
+  id: string;
+  name: string;
+  program: string;
+  graduationDate: string;
+  summary: string;
+  tagline: string;
+  studentCount: number;
+}
+
+export interface CohortStudentSummary {
+  id: string;
+  name: string;
+  roleTrack: string;
+  bio: string;
+  projectCount: number;
+  primaryProjectTitle: string;
+}
+
+export interface CohortDetail extends CohortSummary {
+  students: CohortStudentSummary[];
+}
+
+export interface ProjectSummary {
+  title: string;
+  summary: string;
+  contribution: string;
+  links: string[];
+}
+
+export interface StudentPortfolio {
+  id: string;
+  name: string;
+  roleTrack: string;
+  bio: string;
+  techStack: string[];
+  projects: ProjectSummary[];
+  retrospective: string;
+  mentorComment: string;
+  photos: string[];
+  certificateMessage: string;
+}
+
+function getApiBaseUrl() {
+  return process.env.NEXT_PUBLIC_APP_API_BASE_URL ?? "http://localhost:4000";
+}
+
+async function readJson<T>(path: string): Promise<T> {
+  let response: Response;
+
+  try {
+    response = await fetch(`${getApiBaseUrl()}${path}`, {
+      cache: "no-store"
+    });
+  } catch {
+    throw new Error("API_UNAVAILABLE");
+  }
+
+  if (!response.ok) {
+    throw new Error("데이터를 불러오지 못했습니다.");
+  }
+
+  return (await response.json()) as T;
+}
+
+export async function getCohorts() {
+  try {
+    const data = await readJson<{ cohorts: CohortSummary[] }>("/api/cohorts");
+    return data.cohorts;
+  } catch {
+    return mockCohorts;
+  }
+}
+
+export async function getCohort(cohortId: string) {
+  try {
+    const data = await readJson<{ cohort: CohortDetail }>(`/api/cohorts/${cohortId}`);
+    return data.cohort;
+  } catch {
+    const cohort = findMockCohort(cohortId);
+
+    if (!cohort) {
+      throw new Error("기수를 찾을 수 없습니다.");
+    }
+
+    return cohort;
+  }
+}
+
+export async function getStudent(studentId: string) {
+  try {
+    const data = await readJson<{ student: StudentPortfolio }>(`/api/students/${studentId}`);
+    return data.student;
+  } catch {
+    const student = findMockStudent(studentId);
+
+    if (!student) {
+      throw new Error("수료생을 찾을 수 없습니다.");
+    }
+
+    return student;
+  }
+}
