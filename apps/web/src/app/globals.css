@@ -1,0 +1,67 @@
+@import "tailwindcss";
+
+:root {
+  --background: #f5f1e8;
+  --foreground: #171717;
+  --surface: #fffdf8;
+  --surface-soft: rgba(255, 251, 244, 0.78);
+  --text-default: #2c2a27;
+  --text-muted: #6c665f;
+  --border-soft: rgba(23, 23, 23, 0.08);
+  --hero-dark: #1d1a17;
+  --hero-deep: #31281d;
+  --accent: #8a6a2f;
+  --accent-soft: rgba(138, 106, 47, 0.14);
+  --error: #c2410c;
+  --error-soft: #fff3e8;
+  --shadow-tint: rgba(92, 73, 38, 0.12);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans:
+    "Pretendard Variable",
+    "Pretendard",
+    "Apple SD Gothic Neo",
+    system-ui,
+    sans-serif;
+  --font-display:
+    "Geist",
+    "Pretendard Variable",
+    "Pretendard",
+    system-ui,
+    sans-serif;
+  --font-mono: "SFMono-Regular", "Consolas", "Menlo", monospace;
+}
+
+html,
+body {
+  min-height: 100%;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  word-break: keep-all;
+}
+
+a,
+button {
+  transition:
+    transform 300ms ease,
+    opacity 300ms ease,
+    background-color 300ms ease,
+    border-color 300ms ease,
+    color 300ms ease;
+}
+
+button:active,
+a:active {
+  transform: scale(0.98);
+}
+
+.font-display {
+  font-family: var(--font-display);
+}
