@@ -26,3 +26,13 @@ export function buildBookTypesBackHref(studentId: string | undefined): string {
   if (!studentId) return "/dashboard";
   return `/students/${studentId}`;
 }
+
+export function buildCohortBookCreateHref(cohortId: string | undefined, bookTypeId: string): string {
+  if (!cohortId) return "/dashboard";
+  return `/cohorts/${cohortId}/create?bookType=${bookTypeId}`;
+}
+
+export function buildCohortBookTypesBackHref(cohortId: string | undefined): string {
+  if (!cohortId) return "/dashboard";
+  return `/cohorts/${cohortId}`;
+}
