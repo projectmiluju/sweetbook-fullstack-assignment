@@ -6,6 +6,7 @@
 
 ## 최근 변경
 
+- `#53` Credits API + POST /api/orders 엔드포인트 DoD 완료: `SweetBookClient`에 `getCredits()`·`createOrder()` 추가, `GET /api/credits`·`POST /api/orders` 라우트 추가, 테스트 12개 추가 (api 총 124개). Orders API payload 케이싱 변환(camelCase→PascalCase)을 lib 레이어에서 담당
 - `#48` 책 만들기 버튼 API 연결 DoD 완료: `apps/web/src/lib/api.ts`에 `createBook()` 함수 추가 (POST /api/books, Idempotency-Key 헤더 포함), `EditForm.tsx`·`CohortEditForm.tsx` idle/loading/success/error 상태 전이 UI 구현, 테스트 8개 추가 (web 총 91개). cohortId는 MVP 한정 `"cohort-2026-01"` 하드코딩 (알려진 제한사항)
 - `#47` Books API 오케스트레이션 엔드포인트 DoD 완료: `POST /api/books` 라우트 추가, `sweetbook-api.ts` HTTP 클라이언트 신규 (Node 20 내장 fetch/FormData), `orchestrate-book.ts` 4단계 오케스트레이터 신규, 테스트 17개 추가 (총 112개, `dist` 포함)
 - `#46` EditSession → Books API payload 매퍼 DoD 완료: `apps/api/src/lib/payload-mapper.ts` 신규 추가 (`buildCoverPayload`, `buildContentsPayload`), 테스트 25개 추가 (총 53개)
@@ -48,6 +49,8 @@
 
 ## 다음 계획
 
+- [x] `#53` Credits API + POST /api/orders 엔드포인트 DoD 완료
+- [ ] `#53` PR 머지 (`feat/#53-credits-orders-api-endpoint`)
 - [x] `#48` 책 만들기 버튼 API 연결 DoD 완료
 - [ ] `#48` PR 머지 (`feat/#48-book-create-api-connect`)
 - [x] `#47` Books API 오케스트레이션 엔드포인트 DoD 완료
