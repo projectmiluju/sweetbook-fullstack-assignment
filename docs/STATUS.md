@@ -6,6 +6,7 @@
 
 ## 최근 변경
 
+- `#39` 기수 전용 편집 폼 구현 DoD 완료: `lib/edit-session.ts` `CustomText`에 `cohortIntro?`·`staffMessage?` 추가, `CohortEditForm.tsx` 신규 추가, `cohorts/[cohortId]/create/page.tsx` 연결, 테스트 5개 추가 (총 83개)
 - `#37` 페이지 순서 변경 UI DoD 완료: `lib/edit-session.ts` `buildDefaultPages`+`movePage` 추가, `EditForm.tsx` 페이지 순서 섹션 UI 추가, 테스트 12개 추가 (총 78개)
 - `#36` hiddenBlocks 포함/제외 토글 UI DoD 완료: `lib/edit-session.ts` blockId 빌더+토글+조회 유틸 4개 추가, `EditForm.tsx` projects/photos 토글 UI 추가, 테스트 13개 추가 (총 66개)
 - `#35` EditSession 상태 설계 및 편집 폼 구현 DoD 완료: `lib/edit-session.ts` 타입+팩토리 정의, `EditForm.tsx` 'use client' 컴포넌트 신규 추가, 테스트 8개 추가 (총 53개)
@@ -57,5 +58,7 @@
 - [ ] `#37` PR 머지 (`feat/#37-page-order-ui`)
 - [x] `#36` hiddenBlocks 포함/제외 토글 UI DoD 완료
 - [ ] `#36` PR 머지 (`feat/#36-hidden-blocks-toggle`)
+- [x] `#39` 기수 전용 편집 폼 구현 DoD 완료
+- [ ] `#39` PR 머지 (`feat/#39-cohort-edit-form`)
 - [x] `#35` EditSession 상태 설계 및 편집 폼 구현 DoD 완료
 - [ ] `#35` PR 머지 (`feat/#35-edit-session-form`)

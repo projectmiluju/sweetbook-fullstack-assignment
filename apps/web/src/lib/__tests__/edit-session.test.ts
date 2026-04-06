@@ -51,6 +51,62 @@ describe("createDefaultEditSession", () => {
     const session = createDefaultEditSession("individual", "");
     expect(session.customText.coverTitle).toBe("");
   });
+
+  it("기본 세션에 cohortIntro가 포함되지 않아야 한다", () => {
+    const session = createDefaultEditSession("individual", "홍길동");
+    expect(session.customText.cohortIntro).toBeUndefined();
+  });
+
+  it("기본 세션에 staffMessage가 포함되지 않아야 한다", () => {
+    const session = createDefaultEditSession("individual", "홍길동");
+    expect(session.customText.staffMessage).toBeUndefined();
+  });
+});
+
+describe("cohort-showcase customText override 패턴", () => {
+  it("cohortIntro가 override된 세션에서 cohortIntro가 올바르게 설정되어야 한다", () => {
+    const cohortName = "3기";
+    const cohortSummary = "함께 성장한 3기 수료생들입니다.";
+    const session = {
+      ...createDefaultEditSession("cohort-showcase", cohortName),
+      customText: {
+        coverTitle: cohortName,
+        graduationMessage: "",
+        cohortIntro: cohortSummary,
+        staffMessage: `${cohortName} 기수의 수료를 진심으로 축하합니다.`
+      }
+    };
+    expect(session.customText.cohortIntro).toBe(cohortSummary);
+  });
+
+  it("staffMessage가 override된 세션에서 staffMessage가 올바르게 설정되어야 한다", () => {
+    const cohortName = "3기";
+    const session = {
+      ...createDefaultEditSession("cohort-showcase", cohortName),
+      customText: {
+        coverTitle: cohortName,
+        graduationMessage: "",
+        cohortIntro: "소개글",
+        staffMessage: `${cohortName} 기수의 수료를 진심으로 축하합니다.`
+      }
+    };
+    expect(session.customText.staffMessage).toBe("3기 기수의 수료를 진심으로 축하합니다.");
+  });
+
+  it("customText 전체 override 시 bookType과 hiddenBlocks는 보존되어야 한다", () => {
+    const cohortName = "3기";
+    const session = {
+      ...createDefaultEditSession("cohort-showcase", cohortName),
+      customText: {
+        coverTitle: cohortName,
+        graduationMessage: "",
+        cohortIntro: "소개글",
+        staffMessage: "메시지"
+      }
+    };
+    expect(session.bookType).toBe("cohort-showcase");
+    expect(session.hiddenBlocks).toEqual([]);
+  });
 });
 
 describe("buildProjectBlockId", () => {
