@@ -92,9 +92,9 @@ Foundation Set 화면 기준선은 [foundation-set-ui-spec](./docs/prd/foundatio
 
 백엔드 스크립트:
 
-- `pnpm --filter @sweetboot/api dev`
-- `pnpm --filter @sweetboot/api build`
-- `pnpm --filter @sweetboot/api start`
+- `pnpm --filter @sweetbook/api dev`
+- `pnpm --filter @sweetbook/api build`
+- `pnpm --filter @sweetbook/api start`
 
 ## 현재 상태
 

@@ -1,16 +1,16 @@
 {
-  "name": "sweetboot-fullstack-assignment",
+  "name": "sweetbook-fullstack-assignment",
   "private": true,
   "packageManager": "pnpm@10.28.0",
   "scripts": {
     "dev:web": "pnpm --filter web dev",
-    "dev:api": "pnpm --filter @sweetboot/api dev",
+    "dev:api": "pnpm --filter @sweetbook/api dev",
     "build:web": "pnpm --filter web build",
-    "build:api": "pnpm --filter @sweetboot/api build",
+    "build:api": "pnpm --filter @sweetbook/api build",
     "lint": "pnpm lint:web",
     "lint:web": "pnpm --filter web lint",
     "typecheck": "pnpm typecheck:api",
-    "typecheck:api": "pnpm --filter @sweetboot/api exec tsc -p tsconfig.json --noEmit",
+    "typecheck:api": "pnpm --filter @sweetbook/api exec tsc -p tsconfig.json --noEmit",
     "prepare": "husky"
   },
   "lint-staged": {
