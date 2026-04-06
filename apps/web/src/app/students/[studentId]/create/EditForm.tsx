@@ -6,10 +6,12 @@ import type { ProjectSummary } from "@/lib/api";
 import type { BookTypeId } from "@/lib/book-types";
 import { BOOK_TYPE_LABELS } from "@/lib/book-types";
 import {
+  buildDefaultPages,
   buildPhotoBlockId,
   buildProjectBlockId,
   createDefaultEditSession,
   isBlockHidden,
+  movePage,
   toggleHiddenBlock
 } from "@/lib/edit-session";
 import type { EditSession } from "@/lib/edit-session";
@@ -22,9 +24,10 @@ interface EditFormProps {
 }
 
 export default function EditForm({ bookType, studentName, projects, photos }: EditFormProps) {
-  const [session, setSession] = useState<EditSession>(() =>
-    createDefaultEditSession(bookType, studentName)
-  );
+  const [session, setSession] = useState<EditSession>(() => ({
+    ...createDefaultEditSession(bookType, studentName),
+    pages: buildDefaultPages(projects.length, photos.length)
+  }));
 
   const bookTypeInfo = BOOK_TYPE_LABELS[bookType];
 
@@ -39,6 +42,27 @@ export default function EditForm({ bookType, studentName, projects, photos }: Ed
     setSession((prev) => ({
       ...prev,
       customText: { ...prev.customText, graduationMessage: value }
+    }));
+  }
+
+  function getPageLabel(pageId: string): string {
+    const projectMatch = /^project:(\d+)$/.exec(pageId);
+    if (projectMatch) {
+      const idx = parseInt(projectMatch[1], 10);
+      return projects[idx]?.title ?? `프로젝트 ${idx + 1}`;
+    }
+    const photoMatch = /^photo:(\d+)$/.exec(pageId);
+    if (photoMatch) {
+      const idx = parseInt(photoMatch[1], 10);
+      return `사진 ${idx + 1}`;
+    }
+    return pageId;
+  }
+
+  function handleMovePage(index: number, direction: "up" | "down") {
+    setSession((prev) => ({
+      ...prev,
+      pages: movePage(prev.pages, index, direction)
     }));
   }
 
@@ -151,6 +175,46 @@ export default function EditForm({ bookType, studentName, projects, photos }: Ed
                   </button>
                 );
               })}
+            </div>
+          </div>
+        )}
+
+        {session.pages.length > 0 && (
+          <div>
+            <p className="block text-xs font-semibold tracking-[0.14em] text-[color:var(--accent)] uppercase">
+              페이지 순서
+            </p>
+            <div className="mt-2 space-y-2">
+              {session.pages.map((pageId, index) => (
+                <div
+                  key={pageId}
+                  className="flex items-center gap-2 rounded-[1rem] border border-black/8 bg-white/70 px-3 py-2.5"
+                >
+                  <span className="flex-1 text-sm font-medium text-neutral-950">
+                    {getPageLabel(pageId)}
+                  </span>
+                  <div className="flex gap-1">
+                    <button
+                      type="button"
+                      onClick={() => handleMovePage(index, "up")}
+                      disabled={index === 0}
+                      aria-label="위로 이동"
+                      className="flex h-6 w-6 items-center justify-center rounded-full text-xs text-[color:var(--accent)] transition-colors hover:bg-[color:var(--accent)]/10 disabled:cursor-not-allowed disabled:opacity-30"
+                    >
+                      ▲
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleMovePage(index, "down")}
+                      disabled={index === session.pages.length - 1}
+                      aria-label="아래로 이동"
+                      className="flex h-6 w-6 items-center justify-center rounded-full text-xs text-[color:var(--accent)] transition-colors hover:bg-[color:var(--accent)]/10 disabled:cursor-not-allowed disabled:opacity-30"
+                    >
+                      ▼
+                    </button>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         )}
