@@ -6,6 +6,7 @@
 
 ## 최근 변경
 
+- `#8` 수료생 상세 DoD 완료: 섹션별 로딩 스켈레톤(`loading.tsx`) 및 브랜딩 404 페이지(`not-found.tsx`) 추가
 - `#7` 기수별 수료생 목록 DoD 완료: 로딩 스켈레톤 및 빈 상태 UI 추가, `getCohort()` 테스트 5개 추가
 - `#6` 기수 목록 조회 화면 DoD 완료: 로딩 스켈레톤(`loading.tsx`) 및 빈 상태 UI 추가
 - Vitest 테스트 프레임워크 도입 (`apps/web`), 유닛 테스트 13개 작성 (ADR-002)
@@ -41,5 +42,6 @@
 - [ ] `#6` PR 머지 (`feat/#6-cohort-list-loading-empty-state`)
 - [x] `#7` 기수별 수료생 목록 DoD 완료
 - [ ] `#7` PR 머지 (`feat/#7-cohort-student-list-empty-loading`)
-- [ ] `#8` 수료생 상세의 복귀 흐름과 정보 밀도 보정
+- [x] `#8` 수료생 상세 DoD 완료: 로딩 스켈레톤 + not-found 처리
+- [ ] `#8` PR 머지 (`feat/#8-student-detail-loading-notfound`)
 - [ ] `#9` 책 종류 선택 화면을 실제 다음 단계 중심으로 수정
