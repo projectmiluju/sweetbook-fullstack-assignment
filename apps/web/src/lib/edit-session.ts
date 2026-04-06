@@ -3,6 +3,8 @@ import type { BookTypeId } from "@/lib/book-types";
 export interface CustomText {
   coverTitle: string;
   graduationMessage: string;
+  cohortIntro?: string;
+  staffMessage?: string;
 }
 
 export interface EditSession {

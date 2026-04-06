@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 
 import { getCohort } from "@/lib/api";
 import { BOOK_TYPE_LABELS, buildCohortBookTypesBackHref, isValidBookType } from "@/lib/book-types";
+import CohortEditForm from "./CohortEditForm";
 
 export const dynamic = "force-dynamic";
 
@@ -74,23 +75,7 @@ export default async function CohortCreateBookPage({ params, searchParams }: Coh
           </div>
         </article>
 
-        <aside className="rounded-[1.75rem] bg-[linear-gradient(145deg,#fffaf1,#f4e7cf)] px-6 py-6 shadow-[0_18px_42px_var(--shadow-tint)]">
-          <p className="text-xs font-semibold tracking-[0.16em] text-[color:var(--accent)] uppercase">선택 확정</p>
-          <h2 className="font-display mt-3 text-2xl tracking-tight text-neutral-950">{bookTypeInfo.title}</h2>
-          <p className="mt-3 text-sm leading-7 text-[color:var(--text-muted)]">
-            <span className="font-semibold text-neutral-950">{cohort.name}</span> 기수 전체의 포트폴리오 데이터로 책을 만듭니다.
-          </p>
-          <div className="mt-6 rounded-[1.25rem] bg-white/60 px-4 py-4">
-            <p className="text-xs font-semibold tracking-[0.14em] text-[color:var(--accent)] uppercase">Book Type</p>
-            <p className="mt-1 text-sm font-medium text-neutral-950">{bookType}</p>
-          </div>
-          <button
-            disabled
-            className="mt-6 inline-flex w-full cursor-not-allowed items-center justify-center rounded-full bg-[color:var(--accent)] px-5 py-3 text-sm font-medium text-white opacity-50"
-          >
-            책 만들기 (편집 기능 준비 중)
-          </button>
-        </aside>
+        <CohortEditForm bookType={bookType} cohortName={cohort.name} cohortSummary={cohort.summary} />
       </section>
     </main>
   );
