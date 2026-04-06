@@ -95,6 +95,23 @@ export interface BookCreateResult {
   status: "completed";
 }
 
+export interface CreditsData {
+  balance: number;
+  currency: string;
+}
+
+export interface OrderShipping {
+  recipientName: string;
+  recipientPhone: string;
+  address1: string;
+  postalCode: string;
+}
+
+export interface OrderResult {
+  orderUid: string;
+  status: string;
+}
+
 export async function createBook(params: {
   session: EditSession;
   cohortId: string;
@@ -118,6 +135,38 @@ export async function createBook(params: {
   }
 
   return (await response.json()) as BookCreateResult;
+}
+
+export async function getCredits(): Promise<CreditsData> {
+  const response = await fetch(`${getApiBaseUrl()}/api/credits`);
+  if (!response.ok) {
+    throw new Error("잔액 조회에 실패했습니다.");
+  }
+  return (await response.json()) as CreditsData;
+}
+
+export async function createOrder(params: {
+  bookUid: string;
+  shipping: OrderShipping;
+  idempotencyKey: string;
+}): Promise<OrderResult> {
+  const { bookUid, shipping, idempotencyKey } = params;
+
+  const response = await fetch(`${getApiBaseUrl()}/api/orders`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Idempotency-Key": idempotencyKey,
+    },
+    body: JSON.stringify({ bookUid, shipping }),
+  });
+
+  if (!response.ok) {
+    const body = (await response.json().catch(() => ({}))) as { message?: string };
+    throw new Error(body.message ?? "주문 생성에 실패했습니다.");
+  }
+
+  return (await response.json()) as OrderResult;
 }
 
 export async function getStudent(studentId: string) {

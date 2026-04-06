@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { createBook, getCohort, getCohorts } from "@/lib/api";
+import { createBook, createOrder, getCohort, getCohorts, getCredits } from "@/lib/api";
 import type { EditSession } from "@/lib/edit-session";
 import { findMockCohort, mockCohorts } from "@/lib/mock-data";
 
@@ -362,5 +362,209 @@ describe("createBook", () => {
         idempotencyKey: "test-key-003",
       })
     ).rejects.toThrow("초안 생성 실패");
+  });
+});
+
+// ────────────────────────────────────────────────
+// createOrder
+// ────────────────────────────────────────────────
+
+const MOCK_SHIPPING = {
+  recipientName: "홍길동",
+  recipientPhone: "010-1234-5678",
+  address1: "서울특별시 강남구 테헤란로 123",
+  postalCode: "06234",
+};
+
+describe("createOrder", () => {
+  beforeEach(() => {
+    vi.stubGlobal("fetch", vi.fn());
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it("성공 응답 시 orderUid와 status를 반환해야 한다", async () => {
+    // Arrange
+    vi.mocked(fetch).mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve({ orderUid: "order-abc-123", status: "completed" }),
+    } as Response);
+
+    // Act
+    const result = await createOrder({
+      bookUid: "book-xyz-789",
+      shipping: MOCK_SHIPPING,
+      idempotencyKey: "order-key-001",
+    });
+
+    // Assert
+    expect(result.orderUid).toBe("order-abc-123");
+    expect(result.status).toBe("completed");
+  });
+
+  it("POST /api/orders URL로 요청해야 한다", async () => {
+    // Arrange
+    vi.mocked(fetch).mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve({ orderUid: "order-abc-123", status: "completed" }),
+    } as Response);
+
+    // Act
+    await createOrder({ bookUid: "book-xyz-789", shipping: MOCK_SHIPPING, idempotencyKey: "order-key-001" });
+
+    // Assert
+    const [url] = vi.mocked(fetch).mock.calls[0];
+    expect(String(url)).toContain("/api/orders");
+  });
+
+  it("Idempotency-Key 헤더가 포함되어야 한다", async () => {
+    // Arrange
+    vi.mocked(fetch).mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve({ orderUid: "order-abc-123", status: "completed" }),
+    } as Response);
+
+    // Act
+    await createOrder({ bookUid: "book-xyz-789", shipping: MOCK_SHIPPING, idempotencyKey: "my-order-key" });
+
+    // Assert
+    const [, options] = vi.mocked(fetch).mock.calls[0];
+    const headers = options?.headers as Record<string, string>;
+    expect(headers["Idempotency-Key"]).toBe("my-order-key");
+  });
+
+  it("Content-Type 헤더가 application/json이어야 한다", async () => {
+    // Arrange
+    vi.mocked(fetch).mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve({ orderUid: "order-abc-123", status: "completed" }),
+    } as Response);
+
+    // Act
+    await createOrder({ bookUid: "book-xyz-789", shipping: MOCK_SHIPPING, idempotencyKey: "order-key-001" });
+
+    // Assert
+    const [, options] = vi.mocked(fetch).mock.calls[0];
+    const headers = options?.headers as Record<string, string>;
+    expect(headers["Content-Type"]).toBe("application/json");
+  });
+
+  it("요청 바디에 bookUid와 shipping 4개 필드가 포함되어야 한다", async () => {
+    // Arrange
+    vi.mocked(fetch).mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve({ orderUid: "order-abc-123", status: "completed" }),
+    } as Response);
+
+    // Act
+    await createOrder({ bookUid: "book-xyz-789", shipping: MOCK_SHIPPING, idempotencyKey: "order-key-001" });
+
+    // Assert
+    const [, options] = vi.mocked(fetch).mock.calls[0];
+    const body = JSON.parse(options?.body as string) as { bookUid: string; shipping: typeof MOCK_SHIPPING };
+    expect(body.bookUid).toBe("book-xyz-789");
+    expect(body.shipping.recipientName).toBe(MOCK_SHIPPING.recipientName);
+    expect(body.shipping.recipientPhone).toBe(MOCK_SHIPPING.recipientPhone);
+    expect(body.shipping.address1).toBe(MOCK_SHIPPING.address1);
+    expect(body.shipping.postalCode).toBe(MOCK_SHIPPING.postalCode);
+  });
+
+  it("non-ok 응답 시 에러를 throw해야 한다", async () => {
+    // Arrange
+    vi.mocked(fetch).mockResolvedValue({
+      ok: false,
+      status: 502,
+      json: () => Promise.resolve({ message: "주문 생성에 실패했습니다." }),
+    } as Response);
+
+    // Act & Assert
+    await expect(
+      createOrder({ bookUid: "book-xyz-789", shipping: MOCK_SHIPPING, idempotencyKey: "order-key-001" })
+    ).rejects.toThrow("주문 생성에 실패했습니다.");
+  });
+
+  it("에러 응답 body의 message가 에러 메시지로 사용되어야 한다", async () => {
+    // Arrange
+    vi.mocked(fetch).mockResolvedValue({
+      ok: false,
+      status: 400,
+      json: () => Promise.resolve({ message: "배송 정보(수령인명, 전화번호, 주소, 우편번호)가 모두 필요합니다." }),
+    } as Response);
+
+    // Act & Assert
+    await expect(
+      createOrder({ bookUid: "book-xyz-789", shipping: MOCK_SHIPPING, idempotencyKey: "order-key-001" })
+    ).rejects.toThrow("배송 정보(수령인명, 전화번호, 주소, 우편번호)가 모두 필요합니다.");
+  });
+
+  it("에러 응답 body 파싱 실패 시 기본 에러 메시지를 사용해야 한다", async () => {
+    // Arrange — json() 자체가 throw되는 상황
+    vi.mocked(fetch).mockResolvedValue({
+      ok: false,
+      status: 500,
+      json: () => Promise.reject(new Error("invalid json")),
+    } as Response);
+
+    // Act & Assert
+    await expect(
+      createOrder({ bookUid: "book-xyz-789", shipping: MOCK_SHIPPING, idempotencyKey: "order-key-001" })
+    ).rejects.toThrow("주문 생성에 실패했습니다.");
+  });
+});
+
+// ────────────────────────────────────────────────
+// getCredits
+// ────────────────────────────────────────────────
+
+describe("getCredits", () => {
+  beforeEach(() => {
+    vi.stubGlobal("fetch", vi.fn());
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it("성공 응답 시 balance와 currency를 반환해야 한다", async () => {
+    // Arrange
+    vi.mocked(fetch).mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve({ balance: 1000000, currency: "KRW" }),
+    } as Response);
+
+    // Act
+    const result = await getCredits();
+
+    // Assert
+    expect(result.balance).toBe(1000000);
+    expect(result.currency).toBe("KRW");
+  });
+
+  it("GET /api/credits URL로 요청해야 한다", async () => {
+    // Arrange
+    vi.mocked(fetch).mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve({ balance: 1000000, currency: "KRW" }),
+    } as Response);
+
+    // Act
+    await getCredits();
+
+    // Assert
+    const [url] = vi.mocked(fetch).mock.calls[0];
+    expect(String(url)).toContain("/api/credits");
+  });
+
+  it("non-ok 응답 시 에러를 throw해야 한다", async () => {
+    // Arrange
+    vi.mocked(fetch).mockResolvedValue({
+      ok: false,
+      status: 502,
+    } as Response);
+
+    // Act & Assert
+    await expect(getCredits()).rejects.toThrow("잔액 조회에 실패했습니다.");
   });
 });
