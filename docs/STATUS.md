@@ -6,6 +6,7 @@
 
 ## 최근 변경
 
+- `#36` hiddenBlocks 포함/제외 토글 UI DoD 완료: `lib/edit-session.ts` blockId 빌더+토글+조회 유틸 4개 추가, `EditForm.tsx` projects/photos 토글 UI 추가, 테스트 13개 추가 (총 66개)
 - `#35` EditSession 상태 설계 및 편집 폼 구현 DoD 완료: `lib/edit-session.ts` 타입+팩토리 정의, `EditForm.tsx` 'use client' 컴포넌트 신규 추가, 테스트 8개 추가 (총 53개)
 - `#38` cohortId 진입 경로 연결 DoD 완료: `cohorts/[cohortId]` Next Step CTA 추가, `book-types` 페이지 cohortId 분기, `cohorts/[cohortId]/create` 확정 페이지 신규 추가, lib 유틸 2개 추가 + 테스트 7개 추가 (총 45개)
 - `#9` 책 종류 선택 DoD 완료: `book-types` CTA 흐름 연결, `students/[studentId]/create` 확정 페이지 신규 추가, `lib/book-types.ts` 유틸 추출 + 테스트 20개 추가 (총 38개)
@@ -51,5 +52,7 @@
 - [ ] `#9` PR 머지 (`feat/#9-book-type-selection-flow`)
 - [x] `#38` cohortId 진입 경로 연결 DoD 완료
 - [ ] `#38` PR 머지 (`feat/#38-cohort-showcase-entry-path`)
+- [x] `#36` hiddenBlocks 포함/제외 토글 UI DoD 완료
+- [ ] `#36` PR 머지 (`feat/#36-hidden-blocks-toggle`)
 - [x] `#35` EditSession 상태 설계 및 편집 폼 구현 DoD 완료
 - [ ] `#35` PR 머지 (`feat/#35-edit-session-form`)
