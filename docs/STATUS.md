@@ -6,6 +6,7 @@
 
 ## 최근 변경
 
+- `#46` EditSession → Books API payload 매퍼 DoD 완료: `apps/api/src/lib/payload-mapper.ts` 신규 추가 (`buildCoverPayload`, `buildContentsPayload`), 테스트 25개 추가 (총 53개)
 - `#45` BookSpecs 상수 설정 및 페이지 수 보정 로직 DoD 완료: `apps/api/src/config/book-spec.ts` + `lib/page-adjuster.ts` 신규 추가, `apps/api` Vitest 설정 (15개 테스트), `.env`에 `BOOK_SPEC_UID`·`COVER_TEMPLATE_UID`·`CONTENTS_TEMPLATE_UID` 추가 (ADR-003)
 - `#39` 기수 전용 편집 폼 구현 DoD 완료: `lib/edit-session.ts` `CustomText`에 `cohortIntro?`·`staffMessage?` 추가, `CohortEditForm.tsx` 신규 추가, `cohorts/[cohortId]/create/page.tsx` 연결, 테스트 5개 추가 (총 83개)
 - `#37` 페이지 순서 변경 UI DoD 완료: `lib/edit-session.ts` `buildDefaultPages`+`movePage` 추가, `EditForm.tsx` 페이지 순서 섹션 UI 추가, 테스트 12개 추가 (총 78개)
@@ -45,8 +46,10 @@
 
 ## 다음 계획
 
+- [x] `#46` EditSession → payload 매퍼 DoD 완료
+- [ ] `#46` PR 머지 (`feat/#46-payload-mapper`)
 - [x] `#45` BookSpecs 상수 + 페이지 수 보정 DoD 완료
-- [ ] `#45` PR 머지 (`feat/#45-book-spec-constants`)
+- [x] `#45` PR 머지 완료 (#49)
 
 - [x] `#6` 기수 목록 조회 화면 DoD 완료
 - [ ] `#6` PR 머지 (`feat/#6-cohort-list-loading-empty-state`)
