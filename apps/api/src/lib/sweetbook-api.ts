@@ -78,7 +78,8 @@ export function createSweetBookClient(
         }),
       });
       await assertOk(response, "초안 생성");
-      const data = (await response.json()) as { bookUid?: string; uid?: string };
+      const raw = (await response.json()) as { data?: { bookUid?: string; uid?: string }; bookUid?: string; uid?: string };
+      const data = raw.data ?? raw;
       const bookUid = data.bookUid ?? data.uid ?? "";
       return { bookUid };
     },
