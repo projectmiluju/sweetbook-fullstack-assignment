@@ -60,6 +60,8 @@ function makeClient(overrides: Partial<SweetBookClient> = {}): SweetBookClient {
     createCover: vi.fn().mockResolvedValue(undefined),
     addContentsPage: vi.fn().mockResolvedValue(undefined),
     finalize: vi.fn().mockResolvedValue(undefined),
+    getCredits: vi.fn().mockResolvedValue({ balance: 1000000, currency: "KRW" }),
+    createOrder: vi.fn().mockResolvedValue({ orderUid: "order-abc-123", status: "completed" }),
     ...overrides,
   };
 }
