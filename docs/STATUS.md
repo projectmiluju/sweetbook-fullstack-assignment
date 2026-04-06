@@ -1,11 +1,12 @@
 # 프로젝트 현황
 
-**최종 업데이트:** 2026-04-07
+**최종 업데이트:** 2026-04-07 (Epic #5 완료)
 **현재 버전:** v0.1.0
 **배포 URL:** 없음
 
 ## 최근 변경
 
+- `#55` README 완성 DoD 완료: 타겟 고객·주요 기능·SweetBook API 엔드포인트 표(외부 6+내부 7)·AI 도구 사용 내역·설계 의도·더 시간이 있었다면 섹션 추가. /qa에서 미사용 `GET /bookspecs/{uid}` 항목 발견·제거.
 - `#54` 주문하기 UI DoD 완료: `apps/web/src/lib/api.ts`에 `getCredits()`·`createOrder()` 추가, EditForm·CohortEditForm 성공 상태에 배송 정보 폼(수령인명/전화/주소/우편번호) + OrderStatus 전이 UI 구현, 테스트 11개 추가 (web 총 102개). 잔액 표시 UI는 MVP 범위 제외(알려진 제한사항)
 - `#53` Credits API + POST /api/orders 엔드포인트 DoD 완료: `SweetBookClient`에 `getCredits()`·`createOrder()` 추가, `GET /api/credits`·`POST /api/orders` 라우트 추가, 테스트 12개 추가 (api 총 124개). Orders API payload 케이싱 변환(camelCase→PascalCase)을 lib 레이어에서 담당
 - `#48` 책 만들기 버튼 API 연결 DoD 완료: `apps/web/src/lib/api.ts`에 `createBook()` 함수 추가 (POST /api/books, Idempotency-Key 헤더 포함), `EditForm.tsx`·`CohortEditForm.tsx` idle/loading/success/error 상태 전이 UI 구현, 테스트 8개 추가 (web 총 91개). cohortId는 MVP 한정 `"cohort-2026-01"` 하드코딩 (알려진 제한사항)
@@ -50,6 +51,8 @@
 
 ## 다음 계획
 
+- [x] `#55` README 완성 DoD 완료
+- [ ] `#55` PR 머지 (`docs/#55-readme-final`)
 - [x] `#54` 주문하기 UI DoD 완료
 - [ ] `#54` PR 머지 (`feat/#54-order-ui`)
 - [x] `#53` Credits API + POST /api/orders 엔드포인트 DoD 완료
