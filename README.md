@@ -44,8 +44,9 @@ cp .env.example .env
 | `NEXT_PUBLIC_APP_API_BASE_URL` | 프론트엔드에서 바라보는 내부 API 주소 (기본: `http://localhost:4000`) |
 | `PORT` | API 서버 포트 (기본: `4000`) |
 | `BOOK_SPEC_UID` | Books API 오케스트레이션에 사용할 판형 UID (Sandbox 기준: `PHOTOBOOK_A4_SC`) |
-| `COVER_TEMPLATE_UID` | 표지 templateUid |
-| `CONTENTS_TEMPLATE_UID` | 내지 templateUid |
+| `COVER_TEMPLATE_UID` | 표지 templateUid (Sandbox 기준: `3S1ceGaglj5i` — 구글포토북A) |
+| `CONTENT_TEMPLATE_UID` | 내지 templateUid (Sandbox 기준: `3mjKd8kcaVzT` — 내지b) |
+| `BLANK_TEMPLATE_UID` | 예비 빈 내지 templateUid (Sandbox 기준: `2lpHl6oLAYss`) |
 
 ### 실행
 

@@ -5,7 +5,12 @@
 export const PHOTOBOOK_A4_SC = {
   MIN_PAGES: 24,
   MAX_PAGES: 130,
-  PAGE_STEP: 2
+  PAGE_STEP: 2,
+  /**
+   * 커버 템플릿(구글포토북 계열)이 pageCount에 -2를 기여하므로
+   * 최종화 기준 MIN_PAGES를 맞추려면 내지를 2장 더 보내야 함.
+   */
+  COVER_PAGE_OFFSET: 2,
 } as const;
 
 /**
@@ -15,3 +20,4 @@ export const PHOTOBOOK_A4_SC = {
 export const BOOK_SPEC_UID = process.env.BOOK_SPEC_UID ?? "";
 export const COVER_TEMPLATE_UID = process.env.COVER_TEMPLATE_UID ?? "";
 export const CONTENTS_TEMPLATE_UID = process.env.CONTENTS_TEMPLATE_UID ?? "";
+export const BLANK_TEMPLATE_UID = process.env.BLANK_TEMPLATE_UID ?? "";

@@ -1,6 +1,6 @@
 import type { Cohort, StudentPortfolio } from "../data/cohorts.js";
-import { COVER_TEMPLATE_UID, CONTENTS_TEMPLATE_UID } from "../config/book-spec.js";
 import { adjustPageCount } from "./page-adjuster.js";
+import { PHOTOBOOK_A4_SC } from "../config/book-spec.js";
 
 export interface CustomTextInput {
   coverTitle: string;
@@ -26,37 +26,15 @@ export interface ContentPagePayload {
   parameters: Record<string, string>;
 }
 
-function buildPageParameters(
-  pageId: string,
-  student: StudentPortfolio | undefined,
-  cohort: Cohort
-): Record<string, string> {
-  if (pageId.startsWith("project:")) {
-    const index = parseInt(pageId.split(":")[1], 10);
-    const project = student?.projects[index];
-    if (!project) return {};
-    return {
-      projectTitle: project.title,
-      projectSummary: project.summary,
-      projectContribution: project.contribution,
-    };
-  }
 
-  if (pageId.startsWith("photo:")) {
-    const index = parseInt(pageId.split(":")[1], 10);
-    const photos = student?.photos ?? cohort.students.flatMap((s) => s.photos);
-    const photoUrl = photos[index] ?? "";
-    return { photoUrl };
-  }
-
-  return {};
-}
+const COVER_PHOTO_FALLBACK = "https://picsum.photos/seed/sweetbook-cover/800/1200";
 
 /**
- * 표지 payload를 생성한다.
+ * 표지 payload를 생성한다. (구글포토북 계열 템플릿 기준)
  *
- * individual: student.name + cohort 정보 + customText.coverTitle
- * cohort-showcase: cohort 정보 + customText.coverTitle + cohortIntro
+ *   coverPhoto → 수료생 대표 사진 URL
+ *   subtitle   → 수료생 이름 (개인 북) 또는 기수명 (기수 북)
+ *   dateRange  → 수료일
  */
 export function buildCoverPayload(
   session: EditSessionInput,
@@ -65,37 +43,33 @@ export function buildCoverPayload(
 ): CoverPayload {
   const isIndividual = session.bookType === "individual";
 
-  const title =
-    session.customText.coverTitle ||
-    (isIndividual ? (student?.name ?? cohort.name) : cohort.name);
+  const subtitle = isIndividual
+    ? (student?.name ?? cohort.name)
+    : cohort.name;
 
-  const subtitle = `${cohort.program} ${cohort.name}`;
+  const coverPhoto = isIndividual
+    ? (student?.photos?.[0] ?? COVER_PHOTO_FALLBACK)
+    : (cohort.students[0]?.photos?.[0] ?? COVER_PHOTO_FALLBACK);
 
-  const parameters: Record<string, string> = {
-    title,
-    subtitle,
-    periodText: cohort.graduationDate,
+  return {
+    templateUid: process.env.COVER_TEMPLATE_UID ?? "",
+    parameters: {
+      coverPhoto,
+      subtitle,
+      dateRange: cohort.graduationDate,
+    },
   };
-
-  if (isIndividual && student) {
-    parameters.subjectName = student.name;
-  }
-
-  if (!isIndividual && session.customText.cohortIntro) {
-    parameters.cohortIntro = session.customText.cohortIntro;
-  }
-
-  return { templateUid: COVER_TEMPLATE_UID, parameters };
 }
 
 /**
  * 내지 payload 배열을 생성한다.
  *
+ * 커버 템플릿(구글포토북 계열)이 pageCount에 -COVER_PAGE_OFFSET을 기여하므로
+ * 최종화 기준 MIN_PAGES를 맞추려면 내지를 MIN_PAGES + COVER_PAGE_OFFSET개 이상 보내야 함.
+ *
  * 1. hiddenBlocks에 포함된 pageId 제외
  * 2. pages 순서 반영
- * 3. pageId → templateUid + parameters 변환
- * 4. adjustPageCount(1 + visiblePages.length)로 부족분을 빈 페이지로 보강
- *    (1은 표지 페이지)
+ * 3. 부족분을 내지b 빈 페이지로 보강 (목표: MIN_PAGES + COVER_PAGE_OFFSET)
  */
 export function buildContentsPayload(
   session: EditSessionInput,
@@ -106,20 +80,31 @@ export function buildContentsPayload(
     (pageId) => !session.hiddenBlocks.includes(pageId)
   );
 
-  const contentPayloads: ContentPagePayload[] = visiblePageIds.map((pageId) => ({
-    templateUid: CONTENTS_TEMPLATE_UID,
-    parameters: buildPageParameters(pageId, student, cohort),
+  const monthNum = cohort.graduationDate.slice(5, 7);
+  const dayNum = cohort.graduationDate.slice(8, 10);
+
+  const baseParams: Record<string, string> = {
+    monthNum,
+    dayNum,
+    diaryText: student?.name ?? cohort.name,
+  };
+
+  const contentTemplateUid = process.env.CONTENT_TEMPLATE_UID ?? "";
+
+  const contentPayloads: ContentPagePayload[] = visiblePageIds.map(() => ({
+    templateUid: contentTemplateUid,
+    parameters: baseParams,
   }));
 
-  // 표지 1장 포함한 총 페이지 수로 보정
-  const totalWithCover = 1 + contentPayloads.length;
-  const adjustedTotal = adjustPageCount(totalWithCover);
-  const blankPagesNeeded = adjustedTotal - totalWithCover;
+  // 커버 오프셋을 보정한 실제 목표 페이지 수
+  const targetMin = PHOTOBOOK_A4_SC.MIN_PAGES + PHOTOBOOK_A4_SC.COVER_PAGE_OFFSET;
+  const adjustedTotal = adjustPageCount(contentPayloads.length, targetMin);
+  const blankPagesNeeded = adjustedTotal - contentPayloads.length;
 
   for (let i = 0; i < blankPagesNeeded; i++) {
     contentPayloads.push({
-      templateUid: CONTENTS_TEMPLATE_UID,
-      parameters: {},
+      templateUid: contentTemplateUid,
+      parameters: baseParams,
     });
   }
 

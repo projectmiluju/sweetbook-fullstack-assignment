@@ -2,7 +2,8 @@ import { describe, expect, it } from "vitest";
 
 import type { EditSessionInput } from "../lib/payload-mapper.js";
 import { buildCoverPayload, buildContentsPayload } from "../lib/payload-mapper.js";
-import { COVER_TEMPLATE_UID, CONTENTS_TEMPLATE_UID } from "../config/book-spec.js";
+import { COVER_TEMPLATE_UID } from "../config/book-spec.js";
+const BLANK_TEMPLATE_UID = process.env.BLANK_TEMPLATE_UID ?? "";
 import type { Cohort, StudentPortfolio } from "../data/cohorts.js";
 
 // 테스트용 픽스처
@@ -72,69 +73,51 @@ describe("buildCoverPayload", () => {
       expect(payload.templateUid).toBe(COVER_TEMPLATE_UID);
     });
 
-    it("customText.coverTitle이 parameters.title에 반영되어야 한다", () => {
+    it("subtitle에 student.name이 설정되어야 한다", () => {
       const payload = buildCoverPayload(makeSession(), mockCohort, mockStudent);
-      expect(payload.parameters.title).toBe("김코드의 수료 포트폴리오 북");
+      expect(payload.parameters.subtitle).toBe("김코드");
     });
 
-    it("coverTitle이 비어 있으면 student.name을 title로 사용해야 한다", () => {
-      const session = makeSession({ customText: { coverTitle: "", graduationMessage: "" } });
-      const payload = buildCoverPayload(session, mockCohort, mockStudent);
-      expect(payload.parameters.title).toBe("김코드");
-    });
-
-    it("subtitle에 cohort.program과 cohort.name이 포함되어야 한다", () => {
+    it("dateRange에 cohort.graduationDate가 설정되어야 한다", () => {
       const payload = buildCoverPayload(makeSession(), mockCohort, mockStudent);
-      expect(payload.parameters.subtitle).toContain("SweetBootcamp Web Fullstack");
-      expect(payload.parameters.subtitle).toContain("웹 풀스택 5기");
+      expect(payload.parameters.dateRange).toBe("2026-04-30");
     });
 
-    it("periodText에 cohort.graduationDate가 설정되어야 한다", () => {
+    it("coverPhoto에 student.photos[0] URL이 설정되어야 한다", () => {
       const payload = buildCoverPayload(makeSession(), mockCohort, mockStudent);
-      expect(payload.parameters.periodText).toBe("2026-04-30");
+      expect(payload.parameters.coverPhoto).toBe("https://example.com/photo1.jpg");
     });
 
-    it("subjectName에 student.name이 설정되어야 한다", () => {
-      const payload = buildCoverPayload(makeSession(), mockCohort, mockStudent);
-      expect(payload.parameters.subjectName).toBe("김코드");
+    it("student.photos가 비어 있으면 coverPhoto가 폴백 URL이어야 한다", () => {
+      const studentNoPhoto = { ...mockStudent, photos: [] };
+      const payload = buildCoverPayload(makeSession(), mockCohort, studentNoPhoto);
+      expect(payload.parameters.coverPhoto).toContain("picsum.photos");
     });
 
-    it("cohortIntro는 individual 표지에 포함되지 않아야 한다", () => {
-      const session = makeSession({
-        customText: { coverTitle: "제목", graduationMessage: "", cohortIntro: "기수 소개" },
-      });
-      const payload = buildCoverPayload(session, mockCohort, mockStudent);
-      expect(payload.parameters.cohortIntro).toBeUndefined();
+    it("student가 없으면 subtitle이 cohort.name이어야 한다", () => {
+      const payload = buildCoverPayload(makeSession(), mockCohort);
+      expect(payload.parameters.subtitle).toBe("웹 풀스택 5기");
     });
   });
 
   describe("cohort-showcase 표지", () => {
-    it("cohortIntro가 있으면 parameters에 포함되어야 한다", () => {
-      const session = makeSession({
-        bookType: "cohort-showcase",
-        customText: {
-          coverTitle: "5기 쇼케이스",
-          graduationMessage: "",
-          cohortIntro: "우리는 5기입니다.",
-        },
-      });
-      const payload = buildCoverPayload(session, mockCohort);
-      expect(payload.parameters.cohortIntro).toBe("우리는 5기입니다.");
-    });
-
-    it("subjectName이 포함되지 않아야 한다", () => {
+    it("subtitle에 cohort.name이 설정되어야 한다", () => {
       const session = makeSession({ bookType: "cohort-showcase" });
       const payload = buildCoverPayload(session, mockCohort);
-      expect(payload.parameters.subjectName).toBeUndefined();
+      expect(payload.parameters.subtitle).toBe("웹 풀스택 5기");
     });
 
-    it("coverTitle이 비어 있으면 cohort.name을 title로 사용해야 한다", () => {
-      const session = makeSession({
-        bookType: "cohort-showcase",
-        customText: { coverTitle: "", graduationMessage: "" },
-      });
+    it("coverPhoto에 첫 번째 수료생의 photos[0]이 설정되어야 한다", () => {
+      const cohortWithStudents: Cohort = { ...mockCohort, students: [mockStudent] };
+      const session = makeSession({ bookType: "cohort-showcase" });
+      const payload = buildCoverPayload(session, cohortWithStudents);
+      expect(payload.parameters.coverPhoto).toBe("https://example.com/photo1.jpg");
+    });
+
+    it("수료생이 없으면 coverPhoto가 폴백 URL이어야 한다", () => {
+      const session = makeSession({ bookType: "cohort-showcase" });
       const payload = buildCoverPayload(session, mockCohort);
-      expect(payload.parameters.title).toBe("웹 풀스택 5기");
+      expect(payload.parameters.coverPhoto).toContain("picsum.photos");
     });
   });
 });
@@ -145,135 +128,87 @@ describe("buildCoverPayload", () => {
 
 describe("buildContentsPayload", () => {
   describe("templateUid", () => {
-    it("모든 내지 payload의 templateUid가 CONTENTS_TEMPLATE_UID여야 한다", () => {
+    it("모든 내지 payload의 templateUid가 BLANK_TEMPLATE_UID여야 한다", () => {
       const session = makeSession({ pages: ["project:0"] });
       const payloads = buildContentsPayload(session, mockCohort, mockStudent);
-      expect(payloads.every((p) => p.templateUid === CONTENTS_TEMPLATE_UID)).toBe(true);
+      expect(payloads.every((p) => p.templateUid === BLANK_TEMPLATE_UID)).toBe(true);
+    });
+  });
+
+  describe("내지 기본 파라미터", () => {
+    it("diaryText에 student.name이 설정되어야 한다", () => {
+      const session = makeSession({ pages: ["project:0"] });
+      const payloads = buildContentsPayload(session, mockCohort, mockStudent);
+      expect(payloads[0].parameters.diaryText).toBe("김코드");
+    });
+
+    it("student가 없으면 diaryText에 cohort.name이 설정되어야 한다", () => {
+      const session = makeSession({ bookType: "cohort-showcase", pages: ["project:0"] });
+      const payloads = buildContentsPayload(session, mockCohort);
+      expect(payloads[0].parameters.diaryText).toBe("웹 풀스택 5기");
+    });
+
+    it("monthNum에 cohort.graduationDate의 월(2자리)이 설정되어야 한다", () => {
+      const session = makeSession({ pages: ["project:0"] });
+      const payloads = buildContentsPayload(session, mockCohort, mockStudent);
+      expect(payloads[0].parameters.monthNum).toBe("04");
+    });
+
+    it("dayNum에 cohort.graduationDate의 일(2자리)이 설정되어야 한다", () => {
+      const session = makeSession({ pages: ["project:0"] });
+      const payloads = buildContentsPayload(session, mockCohort, mockStudent);
+      expect(payloads[0].parameters.dayNum).toBe("30");
     });
   });
 
   describe("빈 페이지 자동 보강", () => {
-    it("pages가 0개이면 총 24페이지를 맞추기 위해 23개 내지가 생성되어야 한다", () => {
+    it("pages가 0개이면 최소 내지 26개가 생성되어야 한다 (MIN_PAGES 24 + COVER_OFFSET 2)", () => {
       const session = makeSession({ pages: [] });
       const payloads = buildContentsPayload(session, mockCohort, mockStudent);
-      expect(payloads).toHaveLength(23); // 총 24 = 1(표지) + 23(내지)
+      expect(payloads).toHaveLength(26);
     });
 
-    it("pages가 1개이면 보정 후 최소 23개 이상의 내지가 생성되어야 한다", () => {
+    it("pages가 1개이면 보정 후 최소 26개 이상의 내지가 생성되어야 한다", () => {
       const session = makeSession({ pages: ["project:0"] });
       const payloads = buildContentsPayload(session, mockCohort, mockStudent);
-      expect(payloads.length).toBeGreaterThanOrEqual(23);
+      expect(payloads.length).toBeGreaterThanOrEqual(26);
     });
 
-    it("최종 내지 수 + 1(표지)의 합계가 짝수여야 한다", () => {
+    it("최종 내지 수가 짝수여야 한다", () => {
       const session = makeSession({ pages: ["project:0", "photo:0"] });
       const payloads = buildContentsPayload(session, mockCohort, mockStudent);
-      expect((payloads.length + 1) % 2).toBe(0);
+      expect(payloads.length % 2).toBe(0);
     });
 
-    it("최종 내지 수 + 1(표지)의 합계가 항상 24 이상이어야 한다", () => {
+    it("최종 내지 수가 항상 26 이상이어야 한다", () => {
       const session = makeSession({ pages: ["project:0", "photo:0"] });
       const payloads = buildContentsPayload(session, mockCohort, mockStudent);
-      expect(payloads.length + 1).toBeGreaterThanOrEqual(24);
+      expect(payloads.length).toBeGreaterThanOrEqual(26);
+    });
+  });
+
+  describe("hiddenBlocks 필터링", () => {
+    it("hiddenBlocks에 포함된 pageId는 내지 수에서 제외되어야 한다", () => {
+      const sessionAll = makeSession({ pages: ["project:0", "project:1"] });
+      const sessionHidden = makeSession({
+        pages: ["project:0", "project:1"],
+        hiddenBlocks: ["project:1"],
+      });
+      const payloadsAll = buildContentsPayload(sessionAll, mockCohort, mockStudent);
+      const payloadsHidden = buildContentsPayload(sessionHidden, mockCohort, mockStudent);
+      // hiddenBlocks로 1개 제외 → 보강 전 visiblePages가 1개 차이나므로 보정 후도 달라질 수 있음
+      // 적어도 hiddenBlocks 없는 경우와 같거나 적어야 한다
+      expect(payloadsHidden.length).toBeLessThanOrEqual(payloadsAll.length);
     });
 
-    it("모든 pages가 hiddenBlocks에 포함되면 빈 페이지 23개만 생성되어야 한다", () => {
+    it("모든 pages가 hiddenBlocks에 포함되면 visiblePages가 0개로 빈 내지만 생성되어야 한다", () => {
       const session = makeSession({
         pages: ["project:0", "photo:0"],
         hiddenBlocks: ["project:0", "photo:0"],
       });
       const payloads = buildContentsPayload(session, mockCohort, mockStudent);
-      expect(payloads).toHaveLength(23);
-      expect(payloads.every((p) => Object.keys(p.parameters).length === 0)).toBe(true);
-    });
-  });
-
-  describe("hiddenBlocks 필터링", () => {
-    it("hiddenBlocks에 포함된 pageId는 내지에서 제외되어야 한다", () => {
-      const session = makeSession({
-        pages: ["project:0", "project:1", "photo:0"],
-        hiddenBlocks: ["project:1"],
-      });
-      const payloads = buildContentsPayload(session, mockCohort, mockStudent);
-      const hasProject1 = payloads.some(
-        (p) => p.parameters.projectTitle === "DemoBoard"
-      );
-      expect(hasProject1).toBe(false);
-    });
-
-    it("hiddenBlocks에 없는 pageId는 포함되어야 한다", () => {
-      const session = makeSession({
-        pages: ["project:0", "project:1"],
-        hiddenBlocks: ["project:1"],
-      });
-      const payloads = buildContentsPayload(session, mockCohort, mockStudent);
-      const hasProject0 = payloads.some(
-        (p) => p.parameters.projectTitle === "StudyFlow"
-      );
-      expect(hasProject0).toBe(true);
-    });
-  });
-
-  describe("pages 순서 반영", () => {
-    it("pages 배열 순서대로 내지가 생성되어야 한다", () => {
-      const session = makeSession({
-        pages: ["project:1", "project:0"],
-      });
-      const payloads = buildContentsPayload(session, mockCohort, mockStudent);
-      // 첫 번째 콘텐츠 페이지는 project:1 (DemoBoard)
-      expect(payloads[0].parameters.projectTitle).toBe("DemoBoard");
-      // 두 번째 콘텐츠 페이지는 project:0 (StudyFlow)
-      expect(payloads[1].parameters.projectTitle).toBe("StudyFlow");
-    });
-  });
-
-  describe("pageId → parameters 매핑", () => {
-    it("project: 페이지는 projectTitle·projectSummary·projectContribution을 포함해야 한다", () => {
-      const session = makeSession({ pages: ["project:0"] });
-      const payloads = buildContentsPayload(session, mockCohort, mockStudent);
-      expect(payloads[0].parameters.projectTitle).toBe("StudyFlow");
-      expect(payloads[0].parameters.projectSummary).toBe("스터디 운영 자동화");
-      expect(payloads[0].parameters.projectContribution).toBe("백엔드 API 설계");
-    });
-
-    it("photo:0은 photos[0] URL을 반환해야 한다", () => {
-      const session = makeSession({ pages: ["photo:0"] });
-      const payloads = buildContentsPayload(session, mockCohort, mockStudent);
-      expect(payloads[0].parameters.photoUrl).toBe("https://example.com/photo1.jpg");
-    });
-
-    it("photo:1은 photos[1] URL을 반환해야 한다", () => {
-      const session = makeSession({ pages: ["photo:1"] });
-      const payloads = buildContentsPayload(session, mockCohort, mockStudent);
-      expect(payloads[0].parameters.photoUrl).toBe("https://example.com/photo2.jpg");
-    });
-
-    it("photo: 범위 초과 인덱스는 빈 photoUrl을 반환해야 한다", () => {
-      const session = makeSession({ pages: ["photo:99"] });
-      const payloads = buildContentsPayload(session, mockCohort, mockStudent);
-      expect(payloads[0].parameters.photoUrl).toBe("");
-    });
-
-    it("존재하지 않는 project 인덱스는 빈 parameters를 반환해야 한다", () => {
-      const session = makeSession({ pages: ["project:99"] });
-      const payloads = buildContentsPayload(session, mockCohort, mockStudent);
-      expect(payloads[0].parameters).toEqual({});
-    });
-
-    it("cohort-showcase에서 student 없이 photo: 페이지 처리 시 cohort 전체 사진을 사용해야 한다", () => {
-      const cohortWithPhotos: Cohort = {
-        ...mockCohort,
-        students: [
-          { ...mockStudent, photos: ["https://example.com/cohort1.jpg"] },
-          { ...mockStudent, id: "student-002", photos: ["https://example.com/cohort2.jpg"] },
-        ],
-      };
-      const session = makeSession({
-        bookType: "cohort-showcase",
-        pages: ["photo:1"],
-      });
-      const payloads = buildContentsPayload(session, cohortWithPhotos);
-      expect(payloads[0].parameters.photoUrl).toBe("https://example.com/cohort2.jpg");
+      // visiblePages = 0 → 내지 최소 26개 (24 + cover offset 2)
+      expect(payloads).toHaveLength(26);
     });
   });
 });

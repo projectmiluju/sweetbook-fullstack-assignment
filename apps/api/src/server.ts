@@ -113,9 +113,15 @@ app.post("/api/books", async (request: Request, response: Response) => {
     response.json(result);
   } catch (error) {
     if (error instanceof OrchestrationError) {
+      const causeMessage = error.cause instanceof Error
+        ? error.cause.message
+        : (typeof error.cause === "object" && error.cause !== null)
+          ? JSON.stringify(error.cause)
+          : String(error.cause ?? "");
       response.status(502).json({
         message: error.message,
         step: error.step,
+        cause: causeMessage,
       });
     } else {
       response.status(500).json({ message: "알 수 없는 오류가 발생했습니다." });

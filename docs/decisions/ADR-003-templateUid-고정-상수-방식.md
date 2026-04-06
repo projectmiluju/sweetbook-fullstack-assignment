@@ -1,7 +1,7 @@
 # ADR-003: templateUid 고정 상수 방식 채택 (동적 조회 제외)
 
 **일자:** 2026-04-06
-**상태:** Accepted
+**상태:** Superseded by ADR-004
 
 ## 맥락 (Context)
 
