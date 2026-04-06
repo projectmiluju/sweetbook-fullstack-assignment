@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { getCohort, getCohorts } from "@/lib/api";
+import { createBook, getCohort, getCohorts } from "@/lib/api";
+import type { EditSession } from "@/lib/edit-session";
 import { findMockCohort, mockCohorts } from "@/lib/mock-data";
 
 const MOCK_COHORT_RESPONSE = {
@@ -183,5 +184,183 @@ describe("getCohorts", () => {
       expect(cohort).toHaveProperty("graduationDate");
       expect(cohort).toHaveProperty("studentCount");
     }
+  });
+});
+
+// ────────────────────────────────────────────────
+// createBook
+// ────────────────────────────────────────────────
+
+const MOCK_SESSION: EditSession = {
+  bookType: "individual",
+  customText: {
+    coverTitle: "테스트 표지",
+    graduationMessage: "축하합니다.",
+  },
+  hiddenBlocks: [],
+  pages: ["project:0"],
+};
+
+describe("createBook", () => {
+  beforeEach(() => {
+    vi.stubGlobal("fetch", vi.fn());
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it("성공 응답 시 bookUid와 status를 반환해야 한다", async () => {
+    // Arrange
+    vi.mocked(fetch).mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve({ bookUid: "book-xyz-789", status: "completed" }),
+    } as Response);
+
+    // Act
+    const result = await createBook({
+      session: MOCK_SESSION,
+      cohortId: "cohort-2026-01",
+      studentId: "student-001",
+      idempotencyKey: "test-key-001",
+    });
+
+    // Assert
+    expect(result.bookUid).toBe("book-xyz-789");
+    expect(result.status).toBe("completed");
+  });
+
+  it("POST /api/books URL로 요청해야 한다", async () => {
+    // Arrange
+    vi.mocked(fetch).mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve({ bookUid: "book-xyz-789", status: "completed" }),
+    } as Response);
+
+    // Act
+    await createBook({
+      session: MOCK_SESSION,
+      cohortId: "cohort-2026-01",
+      idempotencyKey: "test-key-001",
+    });
+
+    // Assert
+    const [url] = vi.mocked(fetch).mock.calls[0];
+    expect(String(url)).toContain("/api/books");
+  });
+
+  it("Idempotency-Key 헤더가 포함되어야 한다", async () => {
+    // Arrange
+    vi.mocked(fetch).mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve({ bookUid: "book-xyz-789", status: "completed" }),
+    } as Response);
+
+    // Act
+    await createBook({
+      session: MOCK_SESSION,
+      cohortId: "cohort-2026-01",
+      idempotencyKey: "my-unique-key",
+    });
+
+    // Assert
+    const [, options] = vi.mocked(fetch).mock.calls[0];
+    const headers = options?.headers as Record<string, string>;
+    expect(headers["Idempotency-Key"]).toBe("my-unique-key");
+  });
+
+  it("Content-Type 헤더가 application/json이어야 한다", async () => {
+    // Arrange
+    vi.mocked(fetch).mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve({ bookUid: "book-xyz-789", status: "completed" }),
+    } as Response);
+
+    // Act
+    await createBook({
+      session: MOCK_SESSION,
+      cohortId: "cohort-2026-01",
+      idempotencyKey: "test-key-001",
+    });
+
+    // Assert
+    const [, options] = vi.mocked(fetch).mock.calls[0];
+    const headers = options?.headers as Record<string, string>;
+    expect(headers["Content-Type"]).toBe("application/json");
+  });
+
+  it("요청 바디에 session과 cohortId가 포함되어야 한다", async () => {
+    // Arrange
+    vi.mocked(fetch).mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve({ bookUid: "book-xyz-789", status: "completed" }),
+    } as Response);
+
+    // Act
+    await createBook({
+      session: MOCK_SESSION,
+      cohortId: "cohort-2026-01",
+      idempotencyKey: "test-key-001",
+    });
+
+    // Assert
+    const [, options] = vi.mocked(fetch).mock.calls[0];
+    const body = JSON.parse(options?.body as string) as Record<string, unknown>;
+    expect(body.cohortId).toBe("cohort-2026-01");
+    expect(body.session).toBeDefined();
+  });
+
+  it("studentId 없이도 정상 호출되어야 한다", async () => {
+    // Arrange
+    vi.mocked(fetch).mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve({ bookUid: "book-cohort-001", status: "completed" }),
+    } as Response);
+
+    // Act
+    const result = await createBook({
+      session: { ...MOCK_SESSION, bookType: "cohort-showcase" },
+      cohortId: "cohort-2026-01",
+      idempotencyKey: "test-key-002",
+    });
+
+    // Assert
+    expect(result.bookUid).toBe("book-cohort-001");
+  });
+
+  it("non-ok 응답 시 에러를 throw해야 한다", async () => {
+    // Arrange
+    vi.mocked(fetch).mockResolvedValue({
+      ok: false,
+      status: 502,
+      json: () => Promise.resolve({ message: "초안 생성 실패", step: "draft" }),
+    } as Response);
+
+    // Act & Assert
+    await expect(
+      createBook({
+        session: MOCK_SESSION,
+        cohortId: "cohort-2026-01",
+        idempotencyKey: "test-key-003",
+      })
+    ).rejects.toThrow();
+  });
+
+  it("에러 응답 body의 message가 에러 메시지로 사용되어야 한다", async () => {
+    // Arrange
+    vi.mocked(fetch).mockResolvedValue({
+      ok: false,
+      status: 502,
+      json: () => Promise.resolve({ message: "초안 생성 실패", step: "draft" }),
+    } as Response);
+
+    // Act & Assert
+    await expect(
+      createBook({
+        session: MOCK_SESSION,
+        cohortId: "cohort-2026-01",
+        idempotencyKey: "test-key-003",
+      })
+    ).rejects.toThrow("초안 생성 실패");
   });
 });
