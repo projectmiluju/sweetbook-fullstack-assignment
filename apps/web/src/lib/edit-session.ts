@@ -23,3 +23,22 @@ export function createDefaultEditSession(bookType: BookTypeId, subjectName: stri
     pages: []
   };
 }
+
+export function buildProjectBlockId(index: number): string {
+  return `project:${index}`;
+}
+
+export function buildPhotoBlockId(index: number): string {
+  return `photo:${index}`;
+}
+
+export function isBlockHidden(hiddenBlocks: string[], blockId: string): boolean {
+  return hiddenBlocks.includes(blockId);
+}
+
+export function toggleHiddenBlock(hiddenBlocks: string[], blockId: string): string[] {
+  if (hiddenBlocks.includes(blockId)) {
+    return hiddenBlocks.filter((id) => id !== blockId);
+  }
+  return [...hiddenBlocks, blockId];
+}
