@@ -66,11 +66,12 @@ pnpm dev:api
 - 프론트엔드: Next.js + TypeScript
 - 백엔드: Express + TypeScript
 - 스타일링: Tailwind CSS
+- 테스트: Vitest + @testing-library/react
 - 데이터 저장: 정적 더미 데이터
 - 패키지 매니저: pnpm workspace
 - 외부 API: SweetBook Books API, Orders API, BookSpecs API, Credits API
 
-관련 기술 결정은 [ADR-001](./docs/decisions/ADR-001-프론트엔드-백엔드-분리와-기술-스택-선정.md) 문서를 참고합니다.
+관련 기술 결정은 [ADR-001](./docs/decisions/ADR-001-프론트엔드-백엔드-분리와-기술-스택-선정.md), [ADR-002](./docs/decisions/ADR-002-테스트-프레임워크-Vitest-도입.md) 문서를 참고합니다.
 Foundation Set 화면 기준선은 [foundation-set-ui-spec](./docs/prd/foundation-set-ui-spec.md), [foundation-set-design-guide](./docs/design/foundation-set-design-guide.md) 문서를 참고합니다.
 
 ## 스크립트
@@ -89,6 +90,7 @@ Foundation Set 화면 기준선은 [foundation-set-ui-spec](./docs/prd/foundatio
 - `pnpm --filter web dev`
 - `pnpm --filter web build`
 - `pnpm --filter web lint`
+- `pnpm --filter web test`
 
 백엔드 스크립트:
 
