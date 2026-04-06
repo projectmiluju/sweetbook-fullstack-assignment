@@ -2,18 +2,30 @@
 
 import { useState } from "react";
 
+import { createBook } from "@/lib/api";
 import type { BookTypeId } from "@/lib/book-types";
 import { BOOK_TYPE_LABELS } from "@/lib/book-types";
 import { createDefaultEditSession } from "@/lib/edit-session";
 import type { EditSession } from "@/lib/edit-session";
 
+type BookCreateStatus = "idle" | "loading" | "success" | "error";
+
+const TEXT = {
+  complete: "편집 완료",
+  loading: "책 생성 중...",
+  retry: "다시 시도",
+  successLabel: "책 생성 완료",
+  orderLabel: "주문하기 (준비 중)",
+} as const;
+
 interface CohortEditFormProps {
   bookType: BookTypeId;
+  cohortId: string;
   cohortName: string;
   cohortSummary: string;
 }
 
-export default function CohortEditForm({ bookType, cohortName, cohortSummary }: CohortEditFormProps) {
+export default function CohortEditForm({ bookType, cohortId, cohortName, cohortSummary }: CohortEditFormProps) {
   const [session, setSession] = useState<EditSession>(() => ({
     ...createDefaultEditSession(bookType, cohortName),
     customText: {
@@ -23,6 +35,9 @@ export default function CohortEditForm({ bookType, cohortName, cohortSummary }: 
       staffMessage: `${cohortName} 기수의 수료를 진심으로 축하합니다.`
     }
   }));
+  const [bookStatus, setBookStatus] = useState<BookCreateStatus>("idle");
+  const [bookUid, setBookUid] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const bookTypeInfo = BOOK_TYPE_LABELS[bookType];
 
@@ -47,9 +62,22 @@ export default function CohortEditForm({ bookType, cohortName, cohortSummary }: 
     }));
   }
 
-  function handleComplete() {
-    // Epic #4에서 API 호출로 전환 예정
-    void session;
+  async function handleComplete() {
+    if (bookStatus === "loading") return;
+    setBookStatus("loading");
+    setErrorMessage(null);
+    try {
+      const result = await createBook({
+        session,
+        cohortId,
+        idempotencyKey: `${cohortId}-${Date.now()}`,
+      });
+      setBookUid(result.bookUid);
+      setBookStatus("success");
+    } catch (error) {
+      setErrorMessage(error instanceof Error ? error.message : "책 생성에 실패했습니다.");
+      setBookStatus("error");
+    }
   }
 
   return (
@@ -107,12 +135,41 @@ export default function CohortEditForm({ bookType, cohortName, cohortSummary }: 
         </div>
       </div>
 
-      <button
-        onClick={handleComplete}
-        className="mt-6 inline-flex w-full items-center justify-center rounded-full bg-[color:var(--accent)] px-5 py-3 text-sm font-medium text-white"
-      >
-        편집 완료
-      </button>
+      {bookStatus === "success" && bookUid ? (
+        <div className="mt-6 space-y-3">
+          <div className="rounded-[1rem] border border-[color:var(--accent)]/20 bg-white/70 px-4 py-3">
+            <p className="text-xs font-semibold tracking-[0.14em] text-[color:var(--accent)] uppercase">
+              {TEXT.successLabel}
+            </p>
+            <p className="mt-1 break-all text-xs text-neutral-500">{bookUid}</p>
+          </div>
+          <button
+            type="button"
+            disabled
+            className="inline-flex w-full items-center justify-center rounded-full bg-neutral-200 px-5 py-3 text-sm font-medium text-neutral-400 cursor-not-allowed"
+          >
+            {TEXT.orderLabel}
+          </button>
+        </div>
+      ) : (
+        <>
+          {bookStatus === "error" && errorMessage && (
+            <p className="mt-4 text-sm text-red-600">{errorMessage}</p>
+          )}
+          <button
+            type="button"
+            onClick={() => { void handleComplete(); }}
+            disabled={bookStatus === "loading"}
+            className="mt-4 inline-flex w-full items-center justify-center rounded-full bg-[color:var(--accent)] px-5 py-3 text-sm font-medium text-white disabled:opacity-60 disabled:cursor-not-allowed"
+          >
+            {bookStatus === "loading"
+              ? TEXT.loading
+              : bookStatus === "error"
+                ? TEXT.retry
+                : TEXT.complete}
+          </button>
+        </>
+      )}
     </aside>
   );
 }

@@ -75,7 +75,12 @@ export default async function CohortCreateBookPage({ params, searchParams }: Coh
           </div>
         </article>
 
-        <CohortEditForm bookType={bookType} cohortName={cohort.name} cohortSummary={cohort.summary} />
+        <CohortEditForm
+          bookType={bookType}
+          cohortId={cohortId}
+          cohortName={cohort.name}
+          cohortSummary={cohort.summary}
+        />
       </section>
     </main>
   );
