@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 
-import type { ProjectSummary } from "@/lib/api";
-import { createBook } from "@/lib/api";
+import type { OrderShipping, ProjectSummary } from "@/lib/api";
+import { createBook, createOrder } from "@/lib/api";
 import type { BookTypeId } from "@/lib/book-types";
 import { BOOK_TYPE_LABELS } from "@/lib/book-types";
 import {
@@ -18,13 +18,22 @@ import {
 import type { EditSession } from "@/lib/edit-session";
 
 type BookCreateStatus = "idle" | "loading" | "success" | "error";
+type OrderStatus = "idle" | "loading" | "success" | "error";
 
 const TEXT = {
   complete: "편집 완료",
   loading: "책 생성 중...",
   retry: "다시 시도",
   successLabel: "책 생성 완료",
-  orderLabel: "주문하기 (준비 중)",
+  orderIdle: "주문하기",
+  orderLoading: "주문 처리 중...",
+  orderRetry: "다시 시도",
+  orderSuccessLabel: "주문 완료",
+  shippingTitle: "배송 정보",
+  recipientName: "수령인 이름",
+  recipientPhone: "전화번호",
+  address1: "주소",
+  postalCode: "우편번호",
 } as const;
 
 interface EditFormProps {
@@ -44,6 +53,15 @@ export default function EditForm({ bookType, studentName, cohortId, studentId, p
   const [bookStatus, setBookStatus] = useState<BookCreateStatus>("idle");
   const [bookUid, setBookUid] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [shipping, setShipping] = useState<OrderShipping>({
+    recipientName: "",
+    recipientPhone: "",
+    address1: "",
+    postalCode: "",
+  });
+  const [orderStatus, setOrderStatus] = useState<OrderStatus>("idle");
+  const [orderUid, setOrderUid] = useState<string | null>(null);
+  const [orderErrorMessage, setOrderErrorMessage] = useState<string | null>(null);
 
   const bookTypeInfo = BOOK_TYPE_LABELS[bookType];
 
@@ -87,6 +105,24 @@ export default function EditForm({ bookType, studentName, cohortId, studentId, p
       ...prev,
       hiddenBlocks: toggleHiddenBlock(prev.hiddenBlocks, blockId)
     }));
+  }
+
+  async function handleOrder() {
+    if (!bookUid || orderStatus === "loading") return;
+    setOrderStatus("loading");
+    setOrderErrorMessage(null);
+    try {
+      const result = await createOrder({
+        bookUid,
+        shipping,
+        idempotencyKey: `${studentId}-order-${Date.now()}`,
+      });
+      setOrderUid(result.orderUid);
+      setOrderStatus("success");
+    } catch (error) {
+      setOrderErrorMessage(error instanceof Error ? error.message : "주문 생성에 실패했습니다.");
+      setOrderStatus("error");
+    }
   }
 
   async function handleComplete() {
@@ -257,13 +293,62 @@ export default function EditForm({ bookType, studentName, cohortId, studentId, p
             </p>
             <p className="mt-1 break-all text-xs text-neutral-500">{bookUid}</p>
           </div>
-          <button
-            type="button"
-            disabled
-            className="inline-flex w-full items-center justify-center rounded-full bg-neutral-200 px-5 py-3 text-sm font-medium text-neutral-400 cursor-not-allowed"
-          >
-            {TEXT.orderLabel}
-          </button>
+
+          {orderStatus === "success" && orderUid ? (
+            <div className="rounded-[1rem] border border-green-300 bg-green-50 px-4 py-3">
+              <p className="text-xs font-semibold tracking-[0.14em] text-green-700 uppercase">
+                {TEXT.orderSuccessLabel}
+              </p>
+              <p className="mt-1 break-all text-xs text-neutral-500">{orderUid}</p>
+            </div>
+          ) : (
+            <>
+              <div className="space-y-2">
+                <p className="text-xs font-semibold tracking-[0.14em] text-[color:var(--accent)] uppercase">
+                  {TEXT.shippingTitle}
+                </p>
+                {(
+                  [
+                    { id: "recipientName", label: TEXT.recipientName, key: "recipientName" as const },
+                    { id: "recipientPhone", label: TEXT.recipientPhone, key: "recipientPhone" as const },
+                    { id: "address1", label: TEXT.address1, key: "address1" as const },
+                    { id: "postalCode", label: TEXT.postalCode, key: "postalCode" as const },
+                  ]
+                ).map(({ id, label, key }) => (
+                  <div key={id}>
+                    <label
+                      htmlFor={id}
+                      className="block text-xs text-neutral-500"
+                    >
+                      {label}
+                    </label>
+                    <input
+                      id={id}
+                      type="text"
+                      value={shipping[key]}
+                      onChange={(e) => setShipping((prev) => ({ ...prev, [key]: e.target.value }))}
+                      className="mt-1 w-full rounded-[0.75rem] border border-black/8 bg-white/70 px-3 py-2 text-sm text-neutral-950 outline-none focus:border-[color:var(--accent)] focus:ring-1 focus:ring-[color:var(--accent)]"
+                    />
+                  </div>
+                ))}
+              </div>
+              {orderStatus === "error" && orderErrorMessage && (
+                <p className="text-sm text-red-600">{orderErrorMessage}</p>
+              )}
+              <button
+                type="button"
+                onClick={() => { void handleOrder(); }}
+                disabled={orderStatus === "loading"}
+                className="inline-flex w-full items-center justify-center rounded-full bg-[color:var(--accent)] px-5 py-3 text-sm font-medium text-white disabled:opacity-60 disabled:cursor-not-allowed"
+              >
+                {orderStatus === "loading"
+                  ? TEXT.orderLoading
+                  : orderStatus === "error"
+                    ? TEXT.orderRetry
+                    : TEXT.orderIdle}
+              </button>
+            </>
+          )}
         </div>
       ) : (
         <>
