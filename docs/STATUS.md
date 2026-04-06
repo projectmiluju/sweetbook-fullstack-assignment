@@ -1,11 +1,12 @@
 # 프로젝트 현황
 
-**최종 업데이트:** 2026-04-07 (Epic #5 완료)
+**최종 업데이트:** 2026-04-07 (Issue #60 MVP 수동 테스트 완료)
 **현재 버전:** v0.1.0
 **배포 URL:** 없음
 
 ## 최근 변경
 
+- `#60` MVP 수동 테스트 DoD 완료: `POST /api/books` 502 버그 3건 수정 (createDraft 응답 파싱, 템플릿 재선정, pageCount 오프셋 보정). vitest 설정에서 `dist/` stale 테스트 제거. `sweetbook-books.test.ts` 신규 추가 (21개). api 테스트 총 85개. ADR-004 작성 (ADR-003 supersede). 주문까지 전체 E2E 흐름 수동 검증 완료.
 - `#55` README 완성 DoD 완료: 타겟 고객·주요 기능·SweetBook API 엔드포인트 표(외부 6+내부 7)·AI 도구 사용 내역·설계 의도·더 시간이 있었다면 섹션 추가. /qa에서 미사용 `GET /bookspecs/{uid}` 항목 발견·제거.
 - `#54` 주문하기 UI DoD 완료: `apps/web/src/lib/api.ts`에 `getCredits()`·`createOrder()` 추가, EditForm·CohortEditForm 성공 상태에 배송 정보 폼(수령인명/전화/주소/우편번호) + OrderStatus 전이 UI 구현, 테스트 11개 추가 (web 총 102개). 잔액 표시 UI는 MVP 범위 제외(알려진 제한사항)
 - `#53` Credits API + POST /api/orders 엔드포인트 DoD 완료: `SweetBookClient`에 `getCredits()`·`createOrder()` 추가, `GET /api/credits`·`POST /api/orders` 라우트 추가, 테스트 12개 추가 (api 총 124개). Orders API payload 케이싱 변환(camelCase→PascalCase)을 lib 레이어에서 담당
@@ -35,8 +36,8 @@
 | 이슈 | 심각도 | 상태 |
 |------|-------|------|
 | `jsdom@29` + Vitest 최신 버전 ESM 호환 이슈로 컴포넌트 테스트 환경 미구성 | 낮음 | 추적 중 |
-| README 기준 실제 dev 서버 스모크 검증은 아직 완료되지 않음 | 중간 | 진행 중 |
-| 공용 content template의 도메인 적합성이 낮음 | 높음 | 추적 중 |
+| README 기준 실제 dev 서버 스모크 검증은 아직 완료되지 않음 | 중간 | 완료 (#60) |
+| 공용 content template의 도메인 적합성이 낮음 | 높음 | 완료 (#60, ADR-004) |
 | 책 종류 선택 화면이 실제 다음 단계와 완전히 연결되도록 추가 보정이 필요함 | 중간 | 완료 (#38) |
 
 ## 기술 부채
@@ -51,6 +52,8 @@
 
 ## 다음 계획
 
+- [x] `#60` MVP 수동 테스트 DoD 완료
+- [ ] `#60` PR 머지 (`test/#60-mvp-manual-test-scenarios`)
 - [x] `#55` README 완성 DoD 완료
 - [ ] `#55` PR 머지 (`docs/#55-readme-final`)
 - [x] `#54` 주문하기 UI DoD 완료
