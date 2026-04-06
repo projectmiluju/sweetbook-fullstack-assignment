@@ -70,7 +70,7 @@ export default async function CreateBookPage({ params, searchParams }: CreateBoo
           </div>
         </article>
 
-        <EditForm bookType={bookType} studentName={student.name} />
+        <EditForm bookType={bookType} studentName={student.name} projects={student.projects} photos={student.photos} />
       </section>
     </main>
   );
