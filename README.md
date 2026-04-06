@@ -1,5 +1,7 @@
 # SweetBook Fullstack Assignment
 
+[![CI](https://github.com/projectmiluju/sweetbook-fullstack-assignment/actions/workflows/ci.yml/badge.svg)](https://github.com/projectmiluju/sweetbook-fullstack-assignment/actions/workflows/ci.yml)
+
 부트캠프 운영자가 수료생의 프로젝트와 성장 기록을 책으로 만들고 주문할 수 있는 웹앱입니다.
 
 ## 타겟 고객
@@ -164,6 +166,19 @@ API 서버가 꺼져 있거나 SWEETBOOK_API_KEY가 없어도 프론트엔드는
 | 운영자 인증 | MVP는 로그인 없이 동작. 실제 서비스라면 API Key를 서버에서만 다루는 것과 별개로 사용자 인증이 필요 |
 | 배송 주소 자동완성 | 현재 주소 필드는 자유 입력. 도로명 주소 API 연동으로 UX 개선 가능 |
 | 컴포넌트 단위 테스트 | jsdom + Vitest ESM 호환 이슈로 미구성. happy-dom 또는 Playwright CT 도입 검토 필요 |
+
+## CI / Branch Protection
+
+PR이 열리면 GitHub Actions CI가 자동으로 실행됩니다.
+
+| Job | 검사 항목 |
+|-----|---------|
+| API | `pnpm test` (Vitest 85개), `pnpm build` (tsc) |
+| Web | `pnpm lint` (ESLint), 타입체크 (tsc --noEmit) |
+
+**Branch Protection 설정 방법** (GitHub → Settings → Branches → main):
+1. `Require status checks to pass before merging` 활성화
+2. Required checks에 `API — 테스트 · 빌드`, `Web — 린트 · 타입체크` 추가
 
 ## 스크립트
 
