@@ -64,6 +64,18 @@ export default async function CohortDetailPage({ params }: CohortDetailPageProps
         </p>
       </section>
 
+      <section className="mt-6">
+        {cohort.students.length === 0 && (
+          <div className="flex flex-col items-center justify-center rounded-[1.75rem] bg-[color:var(--surface)] px-6 py-20 text-center shadow-[0_18px_42px_var(--shadow-tint)]">
+            <p className="text-xs font-semibold tracking-[0.18em] text-[color:var(--accent)] uppercase">No Students</p>
+            <p className="font-display mt-4 text-2xl tracking-tight text-neutral-950">등록된 수료생이 없습니다</p>
+            <p className="mt-3 max-w-sm text-sm leading-7 text-[color:var(--text-muted)]">
+              이 기수에 아직 등록된 수료생 데이터가 없습니다.
+            </p>
+          </div>
+        )}
+      </section>
+
       <section className="mt-6 grid gap-5 lg:grid-cols-2">
         {cohort.students.map((student, index) => (
           <Link
