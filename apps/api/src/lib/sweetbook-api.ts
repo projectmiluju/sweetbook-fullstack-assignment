@@ -1,5 +1,27 @@
 import type { CoverPayload, ContentPagePayload } from "./payload-mapper.js";
 
+export interface CreditsData {
+  balance: number;
+  currency: string;
+}
+
+export interface OrderShipping {
+  recipientName: string;
+  recipientPhone: string;
+  address1: string;
+  postalCode: string;
+}
+
+export interface CreateOrderPayload {
+  bookUid: string;
+  shipping: OrderShipping;
+}
+
+export interface OrderData {
+  orderUid: string;
+  status: string;
+}
+
 export interface SweetBookClient {
   createDraft(idempotencyKey: string): Promise<{ bookUid: string }>;
   createCover(
@@ -13,6 +35,8 @@ export interface SweetBookClient {
     payload: ContentPagePayload
   ): Promise<void>;
   finalize(bookUid: string, idempotencyKey: string): Promise<void>;
+  getCredits(): Promise<CreditsData>;
+  createOrder(idempotencyKey: string, payload: CreateOrderPayload): Promise<OrderData>;
 }
 
 interface SweetBookApiError {
@@ -105,6 +129,46 @@ export function createSweetBookClient(
         }
       );
       await assertOk(response, "최종화");
+    },
+
+    async getCredits() {
+      const response = await fetch(`${baseUrl}/credits`, {
+        headers: headers(),
+      });
+      await assertOk(response, "잔액 조회");
+      const body = (await response.json()) as { data?: { balance?: number; currency?: string }; balance?: number; currency?: string };
+      const data = body.data ?? body;
+      return {
+        balance: data.balance ?? 0,
+        currency: data.currency ?? "KRW",
+      };
+    },
+
+    async createOrder(idempotencyKey, payload) {
+      const response = await fetch(`${baseUrl}/orders`, {
+        method: "POST",
+        headers: {
+          ...headers(),
+          "Content-Type": "application/json",
+          "Idempotency-Key": idempotencyKey,
+        },
+        body: JSON.stringify({
+          Items: [{ bookUid: payload.bookUid }],
+          Shipping: {
+            RecipientName: payload.shipping.recipientName,
+            RecipientPhone: payload.shipping.recipientPhone,
+            Address1: payload.shipping.address1,
+            PostalCode: payload.shipping.postalCode,
+          },
+        }),
+      });
+      await assertOk(response, "주문 생성");
+      const body = (await response.json()) as { data?: { orderUid?: string; uid?: string; status?: string }; orderUid?: string; uid?: string; status?: string };
+      const data = body.data ?? body;
+      return {
+        orderUid: data.orderUid ?? data.uid ?? "",
+        status: data.status ?? "completed",
+      };
     },
   };
 }

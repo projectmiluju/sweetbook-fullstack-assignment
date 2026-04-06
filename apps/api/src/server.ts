@@ -6,6 +6,7 @@ import { cohorts } from "./data/cohorts.js";
 import { orchestrateBook, OrchestrationError } from "./lib/orchestrate-book.js";
 import type { OrchestrationInput } from "./lib/orchestrate-book.js";
 import { createSweetBookClient } from "./lib/sweetbook-api.js";
+import type { OrderShipping } from "./lib/sweetbook-api.js";
 
 dotenv.config({ path: "../../.env" });
 
@@ -121,6 +122,58 @@ app.post("/api/books", async (request: Request, response: Response) => {
     }
   } finally {
     inProgressKeys.delete(idempotencyKey);
+  }
+});
+
+app.get("/api/credits", async (_request: Request, response: Response) => {
+  const baseUrl = process.env.SWEETBOOK_API_BASE_URL ?? "";
+  const apiKey = process.env.SWEETBOOK_API_KEY ?? "";
+  const client = createSweetBookClient(baseUrl, apiKey);
+
+  try {
+    const credits = await client.getCredits();
+    response.json({ balance: credits.balance, currency: credits.currency });
+  } catch {
+    response.status(502).json({ message: "잔액 조회에 실패했습니다." });
+  }
+});
+
+app.post("/api/orders", async (request: Request, response: Response) => {
+  const idempotencyKey = request.headers["idempotency-key"];
+  if (!idempotencyKey || typeof idempotencyKey !== "string") {
+    response.status(400).json({ message: "Idempotency-Key 헤더가 필요합니다." });
+    return;
+  }
+
+  const { bookUid, shipping } = request.body as {
+    bookUid?: string;
+    shipping?: Partial<OrderShipping>;
+  };
+
+  if (!bookUid) {
+    response.status(400).json({ message: "bookUid가 필요합니다." });
+    return;
+  }
+
+  const { recipientName, recipientPhone, address1, postalCode } = shipping ?? {};
+  if (!recipientName || !recipientPhone || !address1 || !postalCode) {
+    response.status(400).json({ message: "배송 정보(수령인명, 전화번호, 주소, 우편번호)가 모두 필요합니다." });
+    return;
+  }
+
+  const baseUrl = process.env.SWEETBOOK_API_BASE_URL ?? "";
+  const apiKey = process.env.SWEETBOOK_API_KEY ?? "";
+  const client = createSweetBookClient(baseUrl, apiKey);
+
+  try {
+    const result = await client.createOrder(idempotencyKey, {
+      bookUid,
+      shipping: { recipientName, recipientPhone, address1, postalCode },
+    });
+    response.json(result);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "주문 생성에 실패했습니다.";
+    response.status(502).json({ message });
   }
 });
 
