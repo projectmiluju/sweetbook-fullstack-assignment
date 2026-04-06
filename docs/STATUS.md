@@ -6,6 +6,7 @@
 
 ## 최근 변경
 
+- `#38` cohortId 진입 경로 연결 DoD 완료: `cohorts/[cohortId]` Next Step CTA 추가, `book-types` 페이지 cohortId 분기, `cohorts/[cohortId]/create` 확정 페이지 신규 추가, lib 유틸 2개 추가 + 테스트 7개 추가 (총 45개)
 - `#9` 책 종류 선택 DoD 완료: `book-types` CTA 흐름 연결, `students/[studentId]/create` 확정 페이지 신규 추가, `lib/book-types.ts` 유틸 추출 + 테스트 20개 추가 (총 38개)
 - `#8` 수료생 상세 DoD 완료: 섹션별 로딩 스켈레톤(`loading.tsx`) 및 브랜딩 404 페이지(`not-found.tsx`) 추가
 - `#7` 기수별 수료생 목록 DoD 완료: 로딩 스켈레톤 및 빈 상태 UI 추가, `getCohort()` 테스트 5개 추가
@@ -25,7 +26,7 @@
 | `jsdom@29` + Vitest 최신 버전 ESM 호환 이슈로 컴포넌트 테스트 환경 미구성 | 낮음 | 추적 중 |
 | README 기준 실제 dev 서버 스모크 검증은 아직 완료되지 않음 | 중간 | 진행 중 |
 | 공용 content template의 도메인 적합성이 낮음 | 높음 | 추적 중 |
-| 책 종류 선택 화면이 실제 다음 단계와 완전히 연결되도록 추가 보정이 필요함 | 중간 | 진행 중 |
+| 책 종류 선택 화면이 실제 다음 단계와 완전히 연결되도록 추가 보정이 필요함 | 중간 | 완료 (#38) |
 
 ## 기술 부채
 
@@ -47,3 +48,5 @@
 - [ ] `#8` PR 머지 (`feat/#8-student-detail-loading-notfound`)
 - [x] `#9` 책 종류 선택 DoD 완료: CTA 흐름 연결 + create 확정 페이지 + 테스트 추가
 - [ ] `#9` PR 머지 (`feat/#9-book-type-selection-flow`)
+- [x] `#38` cohortId 진입 경로 연결 DoD 완료
+- [ ] `#38` PR 머지 (`feat/#38-cohort-showcase-entry-path`)
