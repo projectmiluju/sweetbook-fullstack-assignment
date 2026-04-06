@@ -3,6 +3,7 @@
 import { useState } from "react";
 
 import type { ProjectSummary } from "@/lib/api";
+import { createBook } from "@/lib/api";
 import type { BookTypeId } from "@/lib/book-types";
 import { BOOK_TYPE_LABELS } from "@/lib/book-types";
 import {
@@ -16,18 +17,33 @@ import {
 } from "@/lib/edit-session";
 import type { EditSession } from "@/lib/edit-session";
 
+type BookCreateStatus = "idle" | "loading" | "success" | "error";
+
+const TEXT = {
+  complete: "편집 완료",
+  loading: "책 생성 중...",
+  retry: "다시 시도",
+  successLabel: "책 생성 완료",
+  orderLabel: "주문하기 (준비 중)",
+} as const;
+
 interface EditFormProps {
   bookType: BookTypeId;
   studentName: string;
+  cohortId: string;
+  studentId: string;
   projects: ProjectSummary[];
   photos: string[];
 }
 
-export default function EditForm({ bookType, studentName, projects, photos }: EditFormProps) {
+export default function EditForm({ bookType, studentName, cohortId, studentId, projects, photos }: EditFormProps) {
   const [session, setSession] = useState<EditSession>(() => ({
     ...createDefaultEditSession(bookType, studentName),
     pages: buildDefaultPages(projects.length, photos.length)
   }));
+  const [bookStatus, setBookStatus] = useState<BookCreateStatus>("idle");
+  const [bookUid, setBookUid] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const bookTypeInfo = BOOK_TYPE_LABELS[bookType];
 
@@ -73,10 +89,23 @@ export default function EditForm({ bookType, studentName, projects, photos }: Ed
     }));
   }
 
-  function handleComplete() {
-    // Epic #4에서 API 호출로 전환 예정
-    // 현재는 편집 상태를 콘솔에 기록하는 플레이스홀더
-    void session;
+  async function handleComplete() {
+    if (bookStatus === "loading") return;
+    setBookStatus("loading");
+    setErrorMessage(null);
+    try {
+      const result = await createBook({
+        session,
+        cohortId,
+        studentId,
+        idempotencyKey: `${studentId}-${Date.now()}`,
+      });
+      setBookUid(result.bookUid);
+      setBookStatus("success");
+    } catch (error) {
+      setErrorMessage(error instanceof Error ? error.message : "책 생성에 실패했습니다.");
+      setBookStatus("error");
+    }
   }
 
   return (
@@ -220,12 +249,41 @@ export default function EditForm({ bookType, studentName, projects, photos }: Ed
         )}
       </div>
 
-      <button
-        onClick={handleComplete}
-        className="mt-6 inline-flex w-full items-center justify-center rounded-full bg-[color:var(--accent)] px-5 py-3 text-sm font-medium text-white"
-      >
-        편집 완료
-      </button>
+      {bookStatus === "success" && bookUid ? (
+        <div className="mt-6 space-y-3">
+          <div className="rounded-[1rem] border border-[color:var(--accent)]/20 bg-white/70 px-4 py-3">
+            <p className="text-xs font-semibold tracking-[0.14em] text-[color:var(--accent)] uppercase">
+              {TEXT.successLabel}
+            </p>
+            <p className="mt-1 break-all text-xs text-neutral-500">{bookUid}</p>
+          </div>
+          <button
+            type="button"
+            disabled
+            className="inline-flex w-full items-center justify-center rounded-full bg-neutral-200 px-5 py-3 text-sm font-medium text-neutral-400 cursor-not-allowed"
+          >
+            {TEXT.orderLabel}
+          </button>
+        </div>
+      ) : (
+        <>
+          {bookStatus === "error" && errorMessage && (
+            <p className="mt-4 text-sm text-red-600">{errorMessage}</p>
+          )}
+          <button
+            type="button"
+            onClick={() => { void handleComplete(); }}
+            disabled={bookStatus === "loading"}
+            className="mt-4 inline-flex w-full items-center justify-center rounded-full bg-[color:var(--accent)] px-5 py-3 text-sm font-medium text-white disabled:opacity-60 disabled:cursor-not-allowed"
+          >
+            {bookStatus === "loading"
+              ? TEXT.loading
+              : bookStatus === "error"
+                ? TEXT.retry
+                : TEXT.complete}
+          </button>
+        </>
+      )}
     </aside>
   );
 }

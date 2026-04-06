@@ -1,4 +1,5 @@
 import { findMockCohort, findMockStudent, mockCohorts } from "@/lib/mock-data";
+import type { EditSession } from "@/lib/edit-session";
 
 export interface CohortSummary {
   id: string;
@@ -87,6 +88,36 @@ export async function getCohort(cohortId: string) {
 
     return cohort;
   }
+}
+
+export interface BookCreateResult {
+  bookUid: string;
+  status: "completed";
+}
+
+export async function createBook(params: {
+  session: EditSession;
+  cohortId: string;
+  studentId?: string;
+  idempotencyKey: string;
+}): Promise<BookCreateResult> {
+  const { session, cohortId, studentId, idempotencyKey } = params;
+
+  const response = await fetch(`${getApiBaseUrl()}/api/books`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Idempotency-Key": idempotencyKey,
+    },
+    body: JSON.stringify({ session, cohortId, studentId }),
+  });
+
+  if (!response.ok) {
+    const body = (await response.json().catch(() => ({}))) as { message?: string; step?: string };
+    throw new Error(body.message ?? "책 생성에 실패했습니다.");
+  }
+
+  return (await response.json()) as BookCreateResult;
 }
 
 export async function getStudent(studentId: string) {
