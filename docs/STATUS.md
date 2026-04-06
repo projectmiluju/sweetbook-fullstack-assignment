@@ -6,6 +6,7 @@
 
 ## 최근 변경
 
+- `#45` BookSpecs 상수 설정 및 페이지 수 보정 로직 DoD 완료: `apps/api/src/config/book-spec.ts` + `lib/page-adjuster.ts` 신규 추가, `apps/api` Vitest 설정 (15개 테스트), `.env`에 `BOOK_SPEC_UID`·`COVER_TEMPLATE_UID`·`CONTENTS_TEMPLATE_UID` 추가 (ADR-003)
 - `#39` 기수 전용 편집 폼 구현 DoD 완료: `lib/edit-session.ts` `CustomText`에 `cohortIntro?`·`staffMessage?` 추가, `CohortEditForm.tsx` 신규 추가, `cohorts/[cohortId]/create/page.tsx` 연결, 테스트 5개 추가 (총 83개)
 - `#37` 페이지 순서 변경 UI DoD 완료: `lib/edit-session.ts` `buildDefaultPages`+`movePage` 추가, `EditForm.tsx` 페이지 순서 섹션 UI 추가, 테스트 12개 추가 (총 78개)
 - `#36` hiddenBlocks 포함/제외 토글 UI DoD 완료: `lib/edit-session.ts` blockId 빌더+토글+조회 유틸 4개 추가, `EditForm.tsx` projects/photos 토글 UI 추가, 테스트 13개 추가 (총 66개)
@@ -37,12 +38,15 @@
 | 항목 | 등록일 | 예상 작업량 |
 |------|-------|-----------|
 | 컴포넌트 테스트 환경 구성 (happy-dom 또는 Playwright E2E 도입 검토) | 2026-04-06 | M |
-| Template UID를 실제 구현 성공 기준으로 재검증 | 2026-04-04 | M |
+| Template UID를 실제 구현 성공 기준으로 재검증 | 2026-04-04 | M | ~~Sandbox API 직접 조회로 확정 (#45, ADR-003)~~ |
 | pnpm 기준 README 실행 절차를 실제 dev 서버 구동 기준으로 검증 | 2026-04-04 | S |
 | Foundation Set 기준선 위에서 `#7~#9`의 화면별 polish 범위를 다시 조정 | 2026-04-04 | M |
 | PHASE 2 이상 하위 이슈는 아직 생성하지 않음 | 2026-04-04 | S |
 
 ## 다음 계획
+
+- [x] `#45` BookSpecs 상수 + 페이지 수 보정 DoD 완료
+- [ ] `#45` PR 머지 (`feat/#45-book-spec-constants`)
 
 - [x] `#6` 기수 목록 조회 화면 DoD 완료
 - [ ] `#6` PR 머지 (`feat/#6-cohort-list-loading-empty-state`)
