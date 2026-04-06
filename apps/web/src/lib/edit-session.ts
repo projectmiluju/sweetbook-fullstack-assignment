@@ -42,3 +42,24 @@ export function toggleHiddenBlock(hiddenBlocks: string[], blockId: string): stri
   }
   return [...hiddenBlocks, blockId];
 }
+
+export function buildDefaultPages(projectCount: number, photoCount: number): string[] {
+  const pages: string[] = [];
+  for (let i = 0; i < projectCount; i++) {
+    pages.push(buildProjectBlockId(i));
+  }
+  for (let i = 0; i < photoCount; i++) {
+    pages.push(buildPhotoBlockId(i));
+  }
+  return pages;
+}
+
+export function movePage(pages: string[], index: number, direction: "up" | "down"): string[] {
+  if (direction === "up" && index === 0) return pages;
+  if (direction === "down" && index === pages.length - 1) return pages;
+
+  const newPages = [...pages];
+  const swapIndex = direction === "up" ? index - 1 : index + 1;
+  [newPages[index], newPages[swapIndex]] = [newPages[swapIndex], newPages[index]];
+  return newPages;
+}

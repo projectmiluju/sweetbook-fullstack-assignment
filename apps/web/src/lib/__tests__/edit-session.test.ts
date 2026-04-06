@@ -1,10 +1,12 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  buildDefaultPages,
   buildPhotoBlockId,
   buildProjectBlockId,
   createDefaultEditSession,
   isBlockHidden,
+  movePage,
   toggleHiddenBlock
 } from "@/lib/edit-session";
 
@@ -121,5 +123,74 @@ describe("toggleHiddenBlock", () => {
     const after2 = toggleHiddenBlock(after1, "project:0");
     expect(after2).not.toContain("project:0");
     expect(after2).toHaveLength(0);
+  });
+});
+
+describe("buildDefaultPages", () => {
+  it("프로젝트 2개, 사진 1개이면 project:0, project:1, photo:0 순서로 반환해야 한다", () => {
+    expect(buildDefaultPages(2, 1)).toEqual(["project:0", "project:1", "photo:0"]);
+  });
+
+  it("생성된 ID가 buildProjectBlockId/buildPhotoBlockId 포맷과 일치해야 한다", () => {
+    const pages = buildDefaultPages(2, 2);
+    expect(pages[0]).toBe(buildProjectBlockId(0));
+    expect(pages[1]).toBe(buildProjectBlockId(1));
+    expect(pages[2]).toBe(buildPhotoBlockId(0));
+    expect(pages[3]).toBe(buildPhotoBlockId(1));
+  });
+
+  it("프로젝트만 있을 때 photo ID는 포함되지 않아야 한다", () => {
+    const pages = buildDefaultPages(2, 0);
+    expect(pages).toEqual(["project:0", "project:1"]);
+    expect(pages.some((p) => p.startsWith("photo:"))).toBe(false);
+  });
+
+  it("사진만 있을 때 project ID는 포함되지 않아야 한다", () => {
+    const pages = buildDefaultPages(0, 2);
+    expect(pages).toEqual(["photo:0", "photo:1"]);
+    expect(pages.some((p) => p.startsWith("project:"))).toBe(false);
+  });
+
+  it("둘 다 0이면 빈 배열을 반환해야 한다", () => {
+    expect(buildDefaultPages(0, 0)).toEqual([]);
+  });
+});
+
+describe("movePage", () => {
+  it("위로 이동하면 해당 항목이 앞으로 이동해야 한다", () => {
+    const result = movePage(["a", "b", "c"], 1, "up");
+    expect(result).toEqual(["b", "a", "c"]);
+  });
+
+  it("아래로 이동하면 해당 항목이 뒤로 이동해야 한다", () => {
+    const result = movePage(["a", "b", "c"], 1, "down");
+    expect(result).toEqual(["a", "c", "b"]);
+  });
+
+  it("첫 번째 항목을 위로 이동하면 원본과 동일한 배열을 반환해야 한다", () => {
+    const pages = ["a", "b", "c"];
+    const result = movePage(pages, 0, "up");
+    expect(result).toEqual(pages);
+  });
+
+  it("마지막 항목을 아래로 이동하면 원본과 동일한 배열을 반환해야 한다", () => {
+    const pages = ["a", "b", "c"];
+    const result = movePage(pages, 2, "down");
+    expect(result).toEqual(pages);
+  });
+
+  it("원본 배열을 변경하지 않고 새 배열을 반환해야 한다", () => {
+    const original = ["a", "b", "c"];
+    const result = movePage(original, 1, "up");
+    expect(result).not.toBe(original);
+    expect(original).toEqual(["a", "b", "c"]);
+  });
+
+  it("항목이 1개인 배열에서 위로 이동 시 원본과 동일해야 한다", () => {
+    expect(movePage(["a"], 0, "up")).toEqual(["a"]);
+  });
+
+  it("항목이 1개인 배열에서 아래로 이동 시 원본과 동일해야 한다", () => {
+    expect(movePage(["a"], 0, "down")).toEqual(["a"]);
   });
 });
