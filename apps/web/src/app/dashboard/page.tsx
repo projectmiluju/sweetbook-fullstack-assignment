@@ -49,6 +49,18 @@ export default async function DashboardPage() {
         </p>
       </section>
 
+      <section className="mt-6">
+        {cohorts.length === 0 && (
+          <div className="flex flex-col items-center justify-center rounded-[1.75rem] bg-[color:var(--surface)] px-6 py-20 text-center shadow-[0_20px_48px_var(--shadow-tint)]">
+            <p className="text-xs font-semibold tracking-[0.18em] text-[color:var(--accent)] uppercase">No Cohorts</p>
+            <p className="font-display mt-4 text-2xl tracking-tight text-neutral-950">등록된 기수가 없습니다</p>
+            <p className="mt-3 max-w-sm text-sm leading-7 text-[color:var(--text-muted)]">
+              아직 등록된 기수 데이터가 없습니다. 데이터가 준비되면 여기에 기수 목록이 표시됩니다.
+            </p>
+          </div>
+        )}
+      </section>
+
       <section className="mt-6 grid gap-5 lg:grid-cols-2">
         {cohorts.map((cohort, index) => (
           <Link
