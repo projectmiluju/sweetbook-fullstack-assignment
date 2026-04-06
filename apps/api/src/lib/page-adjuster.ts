@@ -8,14 +8,17 @@ import { PHOTOBOOK_A4_SC } from "../config/book-spec.js";
  * - 최대 130페이지 (초과 시 에러)
  * - 2페이지 단위 (홀수면 +1로 올림)
  */
-export function adjustPageCount(count: number): number {
+export function adjustPageCount(
+  count: number,
+  minPages: number = PHOTOBOOK_A4_SC.MIN_PAGES
+): number {
   if (count > PHOTOBOOK_A4_SC.MAX_PAGES) {
     throw new Error(
       `페이지 수(${count})가 최대 허용 페이지(${PHOTOBOOK_A4_SC.MAX_PAGES})를 초과합니다.`
     );
   }
 
-  const adjusted = Math.max(count, PHOTOBOOK_A4_SC.MIN_PAGES);
+  const adjusted = Math.max(count, minPages);
 
   if (adjusted % PHOTOBOOK_A4_SC.PAGE_STEP === 0) {
     return adjusted;
