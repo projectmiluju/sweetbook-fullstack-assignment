@@ -142,8 +142,8 @@ describe("orchestrateBook — 정상 흐름", () => {
       client,
       [mockCohort]
     );
-    // pages=1 → visiblePages=1 → adjustPageCount(2) = 24 → 23 blank 보강 → total 23 contents
-    expect(client.addContentsPage).toHaveBeenCalledTimes(23);
+    // pages=1 → visiblePages=1 → adjustPageCount(1, 26) = 26 → 25 blank 보강 → total 26 contents
+    expect(client.addContentsPage).toHaveBeenCalledTimes(26);
   });
 
   it("내지 첫 번째 호출에 -contents-0 접미사가 전달되어야 한다", async () => {
