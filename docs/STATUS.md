@@ -1,11 +1,12 @@
 # 프로젝트 현황
 
-**최종 업데이트:** 2026-04-06
+**최종 업데이트:** 2026-04-07
 **현재 버전:** v0.1.0
 **배포 URL:** 없음
 
 ## 최근 변경
 
+- `#47` Books API 오케스트레이션 엔드포인트 DoD 완료: `POST /api/books` 라우트 추가, `sweetbook-api.ts` HTTP 클라이언트 신규 (Node 20 내장 fetch/FormData), `orchestrate-book.ts` 4단계 오케스트레이터 신규, 테스트 17개 추가 (총 112개, `dist` 포함)
 - `#46` EditSession → Books API payload 매퍼 DoD 완료: `apps/api/src/lib/payload-mapper.ts` 신규 추가 (`buildCoverPayload`, `buildContentsPayload`), 테스트 25개 추가 (총 53개)
 - `#45` BookSpecs 상수 설정 및 페이지 수 보정 로직 DoD 완료: `apps/api/src/config/book-spec.ts` + `lib/page-adjuster.ts` 신규 추가, `apps/api` Vitest 설정 (15개 테스트), `.env`에 `BOOK_SPEC_UID`·`COVER_TEMPLATE_UID`·`CONTENTS_TEMPLATE_UID` 추가 (ADR-003)
 - `#39` 기수 전용 편집 폼 구현 DoD 완료: `lib/edit-session.ts` `CustomText`에 `cohortIntro?`·`staffMessage?` 추가, `CohortEditForm.tsx` 신규 추가, `cohorts/[cohortId]/create/page.tsx` 연결, 테스트 5개 추가 (총 83개)
@@ -46,8 +47,10 @@
 
 ## 다음 계획
 
+- [x] `#47` Books API 오케스트레이션 엔드포인트 DoD 완료
+- [ ] `#47` PR 머지 (`feat/#47-books-orchestration-endpoint`)
 - [x] `#46` EditSession → payload 매퍼 DoD 완료
-- [ ] `#46` PR 머지 (`feat/#46-payload-mapper`)
+- [x] `#46` PR 머지 완료 (#50)
 - [x] `#45` BookSpecs 상수 + 페이지 수 보정 DoD 완료
 - [x] `#45` PR 머지 완료 (#49)
 

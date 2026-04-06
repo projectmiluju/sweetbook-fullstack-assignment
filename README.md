@@ -27,6 +27,9 @@ cp .env.example .env
 - `SWEETBOOK_API_BASE_URL`
 - `NEXT_PUBLIC_APP_API_BASE_URL`
 - `PORT`
+- `BOOK_SPEC_UID` — Books API 오케스트레이션에 사용할 판형 UID (Sandbox 기준: `PHOTOBOOK_A4_SC`)
+- `COVER_TEMPLATE_UID` — 표지 templateUid (Sandbox 기준: `75HruEK3EnG5`)
+- `CONTENTS_TEMPLATE_UID` — 내지 templateUid (Sandbox 기준: `6YuhM8awvNsQ`)
 
 현재 기본 base URL은 Sandbox 환경인 `https://api-sandbox.sweetbook.com/v1` 입니다.
 프론트엔드의 기본 API 주소는 `http://localhost:4000` 입니다.
