@@ -1,6 +1,13 @@
 import Link from "next/link";
 
-import { BOOK_TYPE_LABELS, BOOK_TYPE_IDS, buildBookCreateHref, buildBookTypesBackHref } from "@/lib/book-types";
+import {
+  BOOK_TYPE_IDS,
+  BOOK_TYPE_LABELS,
+  buildBookCreateHref,
+  buildBookTypesBackHref,
+  buildCohortBookCreateHref,
+  buildCohortBookTypesBackHref
+} from "@/lib/book-types";
 
 const BOOK_TYPE_META = {
   individual: {
@@ -24,16 +31,32 @@ const BOOK_TYPE_META = {
 } as const;
 
 interface BookTypesPageProps {
-  searchParams: Promise<{ studentId?: string }>;
+  searchParams: Promise<{ studentId?: string; cohortId?: string }>;
 }
 
 export default async function BookTypesPage({ searchParams }: BookTypesPageProps) {
-  const { studentId } = await searchParams;
+  const { studentId, cohortId } = await searchParams;
+
+  function getBackHref() {
+    if (cohortId) return buildCohortBookTypesBackHref(cohortId);
+    return buildBookTypesBackHref(studentId);
+  }
+
+  function getBackLabel() {
+    if (cohortId) return "기수 상세로 돌아가기";
+    if (studentId) return "수료생 상세로 돌아가기";
+    return "대시보드로 돌아가기";
+  }
+
+  function getCreateHref(bookTypeId: string) {
+    if (cohortId) return buildCohortBookCreateHref(cohortId, bookTypeId);
+    return buildBookCreateHref(studentId, bookTypeId);
+  }
 
   return (
     <main className="mx-auto flex w-full max-w-7xl flex-1 flex-col px-4 py-8 sm:px-6 lg:px-8 lg:py-10">
-      <Link href={buildBookTypesBackHref(studentId)} className="text-sm font-medium text-[color:var(--accent)]">
-        {studentId ? "수료생 상세로 돌아가기" : "대시보드로 돌아가기"}
+      <Link href={getBackHref()} className="text-sm font-medium text-[color:var(--accent)]">
+        {getBackLabel()}
       </Link>
 
       <section className="mt-4 rounded-[2rem] bg-[color:var(--surface)] px-6 py-7 shadow-[0_18px_42px_var(--shadow-tint)] sm:px-8">
@@ -83,7 +106,7 @@ export default async function BookTypesPage({ searchParams }: BookTypesPageProps
               </dl>
 
               <Link
-                href={buildBookCreateHref(studentId, id)}
+                href={getCreateHref(id)}
                 className={[
                   "mt-8 inline-flex rounded-full px-5 py-3 text-sm font-medium",
                   index === 0 ? "bg-[color:var(--accent)] text-white" : "bg-[color:var(--accent-soft)] text-[color:var(--accent)]"

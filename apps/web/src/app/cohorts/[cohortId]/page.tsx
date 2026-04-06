@@ -76,6 +76,20 @@ export default async function CohortDetailPage({ params }: CohortDetailPageProps
         )}
       </section>
 
+      <aside className="mt-8 rounded-[1.75rem] bg-[linear-gradient(145deg,#fffaf1,#f4e7cf)] px-6 py-6 shadow-[0_18px_42px_var(--shadow-tint)]">
+        <p className="text-xs font-semibold tracking-[0.16em] text-[color:var(--accent)] uppercase">Next Step</p>
+        <h2 className="font-display mt-3 text-2xl tracking-tight text-neutral-950">이 기수의 성과를 한 권으로 정리합니다.</h2>
+        <p className="mt-3 text-sm leading-7 text-[color:var(--text-muted)]">
+          기수 전체 수료생의 프로젝트, 회고, 활동 사진을 묶어 기수 쇼케이스 북을 만들 수 있습니다.
+        </p>
+        <Link
+          href={`/book-types?cohortId=${cohort.id}`}
+          className="mt-6 inline-flex rounded-full bg-[color:var(--accent)] px-5 py-3 text-sm font-medium text-white"
+        >
+          기수 쇼케이스 북 만들기
+        </Link>
+      </aside>
+
       <section className="mt-6 grid gap-5 lg:grid-cols-2">
         {cohort.students.map((student, index) => (
           <Link

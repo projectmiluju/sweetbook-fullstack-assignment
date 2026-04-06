@@ -5,6 +5,8 @@ import {
   BOOK_TYPE_LABELS,
   buildBookCreateHref,
   buildBookTypesBackHref,
+  buildCohortBookCreateHref,
+  buildCohortBookTypesBackHref,
   isValidBookType
 } from "@/lib/book-types";
 
@@ -102,5 +104,41 @@ describe("buildBookTypesBackHref", () => {
 
   it("studentId가 빈 문자열이면 /dashboard를 반환해야 한다", () => {
     expect(buildBookTypesBackHref("")).toBe("/dashboard");
+  });
+});
+
+describe("buildCohortBookCreateHref", () => {
+  it("cohortId가 있으면 기수 쇼케이스 북 create URL을 반환해야 한다", () => {
+    expect(buildCohortBookCreateHref("cohort-1", "cohort-showcase")).toBe(
+      "/cohorts/cohort-1/create?bookType=cohort-showcase"
+    );
+  });
+
+  it("cohortId가 있으면 bookType 파라미터를 올바르게 포함해야 한다", () => {
+    expect(buildCohortBookCreateHref("cohort-abc", "individual")).toBe(
+      "/cohorts/cohort-abc/create?bookType=individual"
+    );
+  });
+
+  it("cohortId가 undefined면 /dashboard를 반환해야 한다", () => {
+    expect(buildCohortBookCreateHref(undefined, "cohort-showcase")).toBe("/dashboard");
+  });
+
+  it("cohortId가 빈 문자열이면 /dashboard를 반환해야 한다", () => {
+    expect(buildCohortBookCreateHref("", "cohort-showcase")).toBe("/dashboard");
+  });
+});
+
+describe("buildCohortBookTypesBackHref", () => {
+  it("cohortId가 있으면 기수 상세 URL을 반환해야 한다", () => {
+    expect(buildCohortBookTypesBackHref("cohort-1")).toBe("/cohorts/cohort-1");
+  });
+
+  it("cohortId가 undefined면 /dashboard를 반환해야 한다", () => {
+    expect(buildCohortBookTypesBackHref(undefined)).toBe("/dashboard");
+  });
+
+  it("cohortId가 빈 문자열이면 /dashboard를 반환해야 한다", () => {
+    expect(buildCohortBookTypesBackHref("")).toBe("/dashboard");
   });
 });
