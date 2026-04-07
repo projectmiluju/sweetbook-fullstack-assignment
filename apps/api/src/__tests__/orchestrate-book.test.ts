@@ -1,5 +1,13 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
 
+vi.mock("../config/env.js", () => ({
+  getEnv: () => ({
+    COVER_TEMPLATE_UID: "TEST_COVER",
+    CONTENT_TEMPLATE_UID: "TEST_CONTENT",
+    BOOK_SPEC_UID: "TEST_BOOK_SPEC",
+  }),
+}));
+
 import type { EditSessionInput } from "../lib/payload-mapper.js";
 import type { SweetBookClient } from "../lib/sweetbook-api.js";
 import type { Cohort } from "../data/cohorts.js";

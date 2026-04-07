@@ -1,9 +1,24 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
+
+import type { Env } from "../config/env.js";
+
+const TEST_ENV: Env = {
+  PORT: 4000,
+  SWEETBOOK_API_KEY: "test-key",
+  SWEETBOOK_API_BASE_URL: "https://test.example.com",
+  BOOK_SPEC_UID: "TEST_BOOK_SPEC",
+  COVER_TEMPLATE_UID: "TEST_COVER",
+  CONTENTS_TEMPLATE_UID: "TEST_CONTENTS",
+  BLANK_TEMPLATE_UID: "TEST_BLANK",
+  CONTENT_TEMPLATE_UID: "TEST_CONTENT",
+};
+
+vi.mock("../config/env.js", () => ({
+  getEnv: () => TEST_ENV,
+}));
 
 import type { EditSessionInput } from "../lib/payload-mapper.js";
 import { buildCoverPayload, buildContentsPayload } from "../lib/payload-mapper.js";
-import { COVER_TEMPLATE_UID } from "../config/book-spec.js";
-const BLANK_TEMPLATE_UID = process.env.BLANK_TEMPLATE_UID ?? "";
 import type { Cohort, StudentPortfolio } from "../data/cohorts.js";
 
 // 테스트용 픽스처
@@ -70,7 +85,7 @@ describe("buildCoverPayload", () => {
   describe("individual 표지", () => {
     it("반환 templateUid가 COVER_TEMPLATE_UID여야 한다", () => {
       const payload = buildCoverPayload(makeSession(), mockCohort, mockStudent);
-      expect(payload.templateUid).toBe(COVER_TEMPLATE_UID);
+      expect(payload.templateUid).toBe(TEST_ENV.COVER_TEMPLATE_UID);
     });
 
     it("subtitle에 student.name이 설정되어야 한다", () => {
@@ -131,7 +146,7 @@ describe("buildContentsPayload", () => {
     it("모든 내지 payload의 templateUid가 BLANK_TEMPLATE_UID여야 한다", () => {
       const session = makeSession({ pages: ["project:0"] });
       const payloads = buildContentsPayload(session, mockCohort, mockStudent);
-      expect(payloads.every((p) => p.templateUid === BLANK_TEMPLATE_UID)).toBe(true);
+      expect(payloads.every((p) => p.templateUid === TEST_ENV.CONTENT_TEMPLATE_UID)).toBe(true);
     });
   });
 
