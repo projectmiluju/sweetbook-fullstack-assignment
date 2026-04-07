@@ -1,4 +1,5 @@
 import type { Cohort, StudentPortfolio } from "../data/cohorts.js";
+import { getEnv } from "../config/env.js";
 import { adjustPageCount } from "./page-adjuster.js";
 import { PHOTOBOOK_A4_SC } from "../config/book-spec.js";
 
@@ -52,7 +53,7 @@ export function buildCoverPayload(
     : (cohort.students[0]?.photos?.[0] ?? COVER_PHOTO_FALLBACK);
 
   return {
-    templateUid: process.env.COVER_TEMPLATE_UID ?? "",
+    templateUid: getEnv().COVER_TEMPLATE_UID,
     parameters: {
       coverPhoto,
       subtitle,
@@ -89,7 +90,7 @@ export function buildContentsPayload(
     diaryText: student?.name ?? cohort.name,
   };
 
-  const contentTemplateUid = process.env.CONTENT_TEMPLATE_UID ?? "";
+  const contentTemplateUid = getEnv().CONTENT_TEMPLATE_UID;
 
   const contentPayloads: ContentPagePayload[] = visiblePageIds.map(() => ({
     templateUid: contentTemplateUid,

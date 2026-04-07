@@ -1,3 +1,4 @@
+import { getEnv } from "../config/env.js";
 import type { CoverPayload, ContentPagePayload } from "./payload-mapper.js";
 
 export interface CreditsData {
@@ -74,7 +75,7 @@ export function createSweetBookClient(
         },
         body: JSON.stringify({
           title: "SweetBook Portfolio",
-          bookSpecUid: process.env.BOOK_SPEC_UID,
+          bookSpecUid: getEnv().BOOK_SPEC_UID,
         }),
       });
       await assertOk(response, "초안 생성");
