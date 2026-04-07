@@ -1,11 +1,12 @@
 # 프로젝트 현황
 
-**최종 업데이트:** 2026-04-07 (Issue #67 구조화 로깅 도입 완료)
+**최종 업데이트:** 2026-04-08 (UI 전면 리디자인 — Foliocraft)
 **현재 버전:** v0.1.0
 **배포 URL:** 없음
 
 ## 최근 변경
 
+- **UI 전면 리디자인:** SweetBook → Foliocraft 이름 변경, SKILL.md(Supanova Redesign Engine) 감사 기준 적용. 악센트 브래스→앰버(`#b45309`), 폰트 Geist→Outfit, 배경 베이지→warm stone. 전 18개 페이지/컴포넌트 스타일 전면 교체. 디자인 문서 3개(토큰/컴포넌트/와이어프레임) 현재 코드 기준 재작성. 컴포넌트 테스트 9개 추가(happy-dom). ADR-006 작성. (총 테스트 111개)
 - `#67` 구조화 로깅 도입 DoD 완료: pino + pino-http 도입, Express 요청 자동 로깅 미들웨어 추가, OrchestrationError·잔액 조회·주문 생성 에러 핸들러에 logger.error 적용 (step·cause 포함), 서버 시작 메시지 logger.info 전환.
 - `#65` 환경변수 시작 시 검증 DoD 완료: zod 기반 `config/env.ts` 신규 추가, `loadEnv()`로 서버 시작 시 필수 env 검증, `getEnv()`로 검증된 env 객체 접근. `process.env` 직접 참조 8곳을 `getEnv()` 호출로 전환. `book-spec.ts`에서 env 상수 export 제거. `.env.example`에 `BLANK_TEMPLATE_UID`·`CONTENT_TEMPLATE_UID` 추가. env 검증 테스트 6개 + 기존 테스트 mock 수정 (총 97개).
 - `#64` 기수 데이터 JSON 전환 DoD 완료: `apps/api/data/cohorts.json` 신규 생성, `cohorts.ts`를 JSON 로더 + 타입 정의 파일로 변경, `__dirname` 기반 경로 해석으로 dev/prod 모두 동작. JSON 로더 테스트 6개 추가 (총 91개).
@@ -40,7 +41,7 @@
 
 | 이슈 | 심각도 | 상태 |
 |------|-------|------|
-| `jsdom@29` + Vitest 최신 버전 ESM 호환 이슈로 컴포넌트 테스트 환경 미구성 | 낮음 | 추적 중 |
+| `jsdom@29` + Vitest 최신 버전 ESM 호환 이슈로 컴포넌트 테스트 환경 미구성 | 낮음 | 완료 (happy-dom 도입) |
 | README 기준 실제 dev 서버 스모크 검증은 아직 완료되지 않음 | 중간 | 완료 (#60) |
 | 공용 content template의 도메인 적합성이 낮음 | 높음 | 완료 (#60, ADR-004) |
 | 책 종류 선택 화면이 실제 다음 단계와 완전히 연결되도록 추가 보정이 필요함 | 중간 | 완료 (#38) |
@@ -49,7 +50,7 @@
 
 | 항목 | 등록일 | 예상 작업량 |
 |------|-------|-----------|
-| 컴포넌트 테스트 환경 구성 (happy-dom 또는 Playwright E2E 도입 검토) | 2026-04-06 | M |
+| ~~컴포넌트 테스트 환경 구성~~ happy-dom 도입 완료 | 2026-04-08 | ~~M~~ 완료 |
 | Template UID를 실제 구현 성공 기준으로 재검증 | 2026-04-04 | M | ~~Sandbox API 직접 조회로 확정 (#45, ADR-003)~~ |
 | pnpm 기준 README 실행 절차를 실제 dev 서버 구동 기준으로 검증 | 2026-04-04 | S |
 | Foundation Set 기준선 위에서 `#7~#9`의 화면별 polish 범위를 다시 조정 | 2026-04-04 | M |
