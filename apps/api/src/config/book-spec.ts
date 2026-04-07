@@ -14,10 +14,6 @@ export const PHOTOBOOK_A4_SC = {
 } as const;
 
 /**
- * Books API 오케스트레이션에 사용할 식별자
- * 실제 값은 .env에서 주입 (BOOK_SPEC_UID, COVER_TEMPLATE_UID, CONTENTS_TEMPLATE_UID)
+ * Books API 오케스트레이션에 사용할 식별자는
+ * config/env.ts에서 zod로 검증 후 getEnv()를 통해 접근합니다.
  */
-export const BOOK_SPEC_UID = process.env.BOOK_SPEC_UID ?? "";
-export const COVER_TEMPLATE_UID = process.env.COVER_TEMPLATE_UID ?? "";
-export const CONTENTS_TEMPLATE_UID = process.env.CONTENTS_TEMPLATE_UID ?? "";
-export const BLANK_TEMPLATE_UID = process.env.BLANK_TEMPLATE_UID ?? "";

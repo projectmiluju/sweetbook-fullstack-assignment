@@ -1,5 +1,11 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
 
+vi.mock("../config/env.js", () => ({
+  getEnv: () => ({
+    BOOK_SPEC_UID: "PHOTOBOOK_A4_SC",
+  }),
+}));
+
 import { createSweetBookClient } from "../lib/sweetbook-api.js";
 
 const BASE_URL = "https://api-sandbox.sweetbook.com/v1";
@@ -22,12 +28,10 @@ const MOCK_CONTENTS_PAYLOAD = {
 describe("createDraft", () => {
   beforeEach(() => {
     vi.stubGlobal("fetch", vi.fn());
-    vi.stubEnv("BOOK_SPEC_UID", "PHOTOBOOK_A4_SC");
   });
 
   afterEach(() => {
     vi.unstubAllGlobals();
-    vi.unstubAllEnvs();
   });
 
   it("중첩 data.bookUid 응답을 올바르게 파싱해야 한다", async () => {

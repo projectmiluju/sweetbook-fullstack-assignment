@@ -2,6 +2,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import express, { type Request, type Response } from "express";
 
+import { getEnv, loadEnv } from "./config/env.js";
 import { cohorts } from "./data/cohorts.js";
 import { orchestrateBook, OrchestrationError } from "./lib/orchestrate-book.js";
 import type { OrchestrationInput } from "./lib/orchestrate-book.js";
@@ -10,8 +11,9 @@ import type { OrderShipping } from "./lib/sweetbook-api.js";
 
 dotenv.config({ path: "../../.env" });
 
+const env = loadEnv();
 const app = express();
-const port = Number(process.env.PORT ?? "4000");
+const port = env.PORT;
 
 // 진행 중인 책 생성 요청을 추적 (중복 요청 차단)
 const inProgressKeys = new Set<string>();
@@ -100,9 +102,8 @@ app.post("/api/books", async (request: Request, response: Response) => {
     return;
   }
 
-  const baseUrl = process.env.SWEETBOOK_API_BASE_URL ?? "";
-  const apiKey = process.env.SWEETBOOK_API_KEY ?? "";
-  const client = createSweetBookClient(baseUrl, apiKey);
+  const { SWEETBOOK_API_BASE_URL, SWEETBOOK_API_KEY } = getEnv();
+  const client = createSweetBookClient(SWEETBOOK_API_BASE_URL, SWEETBOOK_API_KEY);
 
   inProgressKeys.add(idempotencyKey);
   try {
@@ -132,9 +133,8 @@ app.post("/api/books", async (request: Request, response: Response) => {
 });
 
 app.get("/api/credits", async (_request: Request, response: Response) => {
-  const baseUrl = process.env.SWEETBOOK_API_BASE_URL ?? "";
-  const apiKey = process.env.SWEETBOOK_API_KEY ?? "";
-  const client = createSweetBookClient(baseUrl, apiKey);
+  const { SWEETBOOK_API_BASE_URL, SWEETBOOK_API_KEY } = getEnv();
+  const client = createSweetBookClient(SWEETBOOK_API_BASE_URL, SWEETBOOK_API_KEY);
 
   try {
     const credits = await client.getCredits();
@@ -167,9 +167,8 @@ app.post("/api/orders", async (request: Request, response: Response) => {
     return;
   }
 
-  const baseUrl = process.env.SWEETBOOK_API_BASE_URL ?? "";
-  const apiKey = process.env.SWEETBOOK_API_KEY ?? "";
-  const client = createSweetBookClient(baseUrl, apiKey);
+  const { SWEETBOOK_API_BASE_URL, SWEETBOOK_API_KEY } = getEnv();
+  const client = createSweetBookClient(SWEETBOOK_API_BASE_URL, SWEETBOOK_API_KEY);
 
   try {
     const result = await client.createOrder(idempotencyKey, {
