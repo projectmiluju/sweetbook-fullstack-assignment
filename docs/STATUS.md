@@ -1,11 +1,13 @@
 # 프로젝트 현황
 
-**최종 업데이트:** 2026-04-08 (UI 전면 리디자인 — Foliocraft)
+**최종 업데이트:** 2026-04-08 (PRD 3개 승인 + 이슈 분해)
 **현재 버전:** v0.1.0
 **배포 URL:** 없음
 
 ## 최근 변경
 
+- **PRD 3개 승인 + 이슈 15개 생성:** 내지 콘텐츠 매핑 개선(`content-page-mapping-improvement.md`), PostgreSQL+Prisma DB 도입(`database-prisma-migration.md`), 책 프리뷰 렌더러(`book-preview-renderer.md`). #74~#88 이슈 생성, #68 업데이트. ADR-007(DB), ADR-008(프리뷰) 작성.
+- **SweetBook API 템플릿 조사 완료:** A4 SC 판형 24개 템플릿의 파라미터 확인. 내지a(텍스트+사진), 내지_gallery(콜라주), 내지b(텍스트) 3종을 페이지 타입별로 사용하는 전략 확정. 프리뷰·PDF 엔드포인트 미지원 확인 → 자체 렌더러 결정.
 - **UI 전면 리디자인:** SweetBook → Foliocraft 이름 변경, SKILL.md(Supanova Redesign Engine) 감사 기준 적용. 악센트 브래스→앰버(`#b45309`), 폰트 Geist→Outfit, 배경 베이지→warm stone. 전 18개 페이지/컴포넌트 스타일 전면 교체. 디자인 문서 3개(토큰/컴포넌트/와이어프레임) 현재 코드 기준 재작성. 컴포넌트 테스트 9개 추가(happy-dom). ADR-006 작성. (총 테스트 111개)
 - `#67` 구조화 로깅 도입 DoD 완료: pino + pino-http 도입, Express 요청 자동 로깅 미들웨어 추가, OrchestrationError·잔액 조회·주문 생성 에러 핸들러에 logger.error 적용 (step·cause 포함), 서버 시작 메시지 logger.info 전환.
 - `#65` 환경변수 시작 시 검증 DoD 완료: zod 기반 `config/env.ts` 신규 추가, `loadEnv()`로 서버 시작 시 필수 env 검증, `getEnv()`로 검증된 env 객체 접근. `process.env` 직접 참조 8곳을 `getEnv()` 호출로 전환. `book-spec.ts`에서 env 상수 export 제거. `.env.example`에 `BLANK_TEMPLATE_UID`·`CONTENT_TEMPLATE_UID` 추가. env 검증 테스트 6개 + 기존 테스트 mock 수정 (총 97개).
@@ -41,49 +43,53 @@
 
 | 이슈 | 심각도 | 상태 |
 |------|-------|------|
+| 내지 모든 페이지에 동일 파라미터(이름만) 반복 — 실제 콘텐츠 미반영 | 높음 | 진행 예정 (#82) |
+| SweetBook API 프리뷰/PDF 미지원 — 책 결과물 확인 불가 | 높음 | 진행 예정 (#85~#88) |
+| DB 없음 — CRUD 불가, 시연 시 데이터 조작 불가 | 높음 | 진행 예정 (#74~#80) |
+| server.ts 라우트 핸들러 테스트 0개 | 중간 | #76 구현 시 해결 |
 | `jsdom@29` + Vitest 최신 버전 ESM 호환 이슈로 컴포넌트 테스트 환경 미구성 | 낮음 | 완료 (happy-dom 도입) |
-| README 기준 실제 dev 서버 스모크 검증은 아직 완료되지 않음 | 중간 | 완료 (#60) |
-| 공용 content template의 도메인 적합성이 낮음 | 높음 | 완료 (#60, ADR-004) |
-| 책 종류 선택 화면이 실제 다음 단계와 완전히 연결되도록 추가 보정이 필요함 | 중간 | 완료 (#38) |
 
 ## 기술 부채
 
 | 항목 | 등록일 | 예상 작업량 |
 |------|-------|-----------|
-| ~~컴포넌트 테스트 환경 구성~~ happy-dom 도입 완료 | 2026-04-08 | ~~M~~ 완료 |
-| Template UID를 실제 구현 성공 기준으로 재검증 | 2026-04-04 | M | ~~Sandbox API 직접 조회로 확정 (#45, ADR-003)~~ |
+| payload-mapper가 블록 ID를 무시하고 동일 파라미터 복사 | 2026-04-08 | L (#82) |
+| 정적 JSON 데이터 → PostgreSQL 전환 필요 | 2026-04-08 | M (#74~#76) |
+| PRD 24페이지 구성표에 필요한 데이터 필드 누락 (회고 구조화, 프로젝트 상세 등) | 2026-04-08 | M (#75 seed) |
 | pnpm 기준 README 실행 절차를 실제 dev 서버 구동 기준으로 검증 | 2026-04-04 | S |
-| Foundation Set 기준선 위에서 `#7~#9`의 화면별 polish 범위를 다시 조정 | 2026-04-04 | M |
-| PHASE 2 이상 하위 이슈는 아직 생성하지 않음 | 2026-04-04 | S |
 
 ## 다음 계획
 
-- [x] `#67` 구조화 로깅 도입 DoD 완료
-- [ ] `#67` PR 머지 (`feat/#67-structured-logging`)
-- [x] `#65` 환경변수 시작 시 검증 DoD 완료
-- [ ] `#65` PR 머지 (`feat/#65-env-validation`)
-- [x] `#64` 기수 데이터 JSON 전환 DoD 완료
-- [ ] `#64` PR 머지 (`feat/#64-json-data`)
-- [x] `#63` Docker Compose 컨테이너화 DoD 완료
-- [ ] `#63` PR 머지 (`feat/#63-docker-compose`)
-- [x] `#66` GitHub Actions CI 구축 DoD 완료
-- [ ] `#66` PR 머지 (`feat/#66-github-actions-ci`)
-- [x] `#60` MVP 수동 테스트 DoD 완료
-- [ ] `#60` PR 머지 (`test/#60-mvp-manual-test-scenarios`)
-- [x] `#55` README 완성 DoD 완료
-- [ ] `#55` PR 머지 (`docs/#55-readme-final`)
-- [x] `#54` 주문하기 UI DoD 완료
-- [ ] `#54` PR 머지 (`feat/#54-order-ui`)
-- [x] `#53` Credits API + POST /api/orders 엔드포인트 DoD 완료
-- [ ] `#53` PR 머지 (`feat/#53-credits-orders-api-endpoint`)
-- [x] `#48` 책 만들기 버튼 API 연결 DoD 완료
-- [ ] `#48` PR 머지 (`feat/#48-book-create-api-connect`)
-- [x] `#47` Books API 오케스트레이션 엔드포인트 DoD 완료
-- [x] `#47` PR 머지 완료 (#51)
-- [x] `#46` EditSession → payload 매퍼 DoD 완료
-- [x] `#46` PR 머지 완료 (#50)
-- [x] `#45` BookSpecs 상수 + 페이지 수 보정 DoD 완료
-- [x] `#45` PR 머지 완료 (#49)
+### Epic: DB 도입 (#74~#80)
+- [ ] `#74` Docker Compose PostgreSQL + Prisma 초기 설정 [M]
+- [ ] `#75` Prisma seed 스크립트 [M] → depends: #74
+- [ ] `#76` GET 엔드포인트 DB 조회 전환 [M] → depends: #75
+- [ ] `#77` Cohort CRUD API [M] → depends: #76
+- [ ] `#78` Student CRUD API [M] → depends: #76
+- [ ] `#79` Project CRUD API [S] → depends: #76
+- [ ] `#80` orchestrate-book DB 연동 [S] → depends: #76
+
+### Epic: 내지 콘텐츠 매핑 (#81~#84)
+- [ ] `#81` SweetBook sandbox 선행 검증 [M] — 독립 (동시 시작 가능)
+- [ ] `#82` payload-mapper 페이지별 매핑 [L] → depends: #76, #81
+- [ ] `#83` 프론트엔드 블록 ID 확장 [M] → depends: #82
+- [ ] `#84` EditForm 새 블록 타입 UI [M] → depends: #83
+
+### Epic: 책 프리뷰 렌더러 (#85~#88)
+- [ ] `#85` 프리뷰 선행 검증 [S] — 독립 (동시 시작 가능)
+- [ ] `#86` 템플릿 레이아웃 데이터 정적 저장 [M] → depends: #85
+- [ ] `#87` PageRenderer 컴포넌트 [L] → depends: #86
+- [ ] `#88` BookPreview + EditForm 연결 [M] → depends: #87, #82
+
+### 배포
+- [ ] `#68` Vercel + Railway 프로덕션 배포 [M] → depends: #76
+
+### 미머지 PR (기존)
+- [x] `#67` 구조화 로깅 DoD 완료 — PR 머지 대기
+- [x] `#65` 환경변수 검증 DoD 완료 — PR 머지 대기
+- [x] `#64` JSON 전환 DoD 완료 — PR 머지 대기
+- [x] `#63` Docker Compose DoD 완료 — PR 머지 대기
+- [x] `#66` CI DoD 완료 — PR 머지 대기
 
 - [x] `#6` 기수 목록 조회 화면 DoD 완료
 - [ ] `#6` PR 머지 (`feat/#6-cohort-list-loading-empty-state`)
