@@ -87,6 +87,7 @@ pnpm dev:web
 │   ├── devlog     # 개발 일지
 │   ├── prd        # 제품 요구사항 문서
 │   └── STATUS.md  # 현재 진행 상태
+├── docker-compose.yml  # Docker Compose 설정
 └── .github        # 이슈/PR 템플릿
 ```
 
@@ -98,9 +99,10 @@ pnpm dev:web
 - **테스트:** Vitest
 - **데이터 저장:** 정적 더미 데이터
 - **패키지 매니저:** pnpm workspace
+- **컨테이너:** Docker Compose (멀티스테이지 빌드)
 - **외부 API:** SweetBook Books API, Orders API, BookSpecs API, Credits API
 
-관련 기술 결정: [ADR-001](./docs/decisions/ADR-001-프론트엔드-백엔드-분리와-기술-스택-선정.md), [ADR-002](./docs/decisions/ADR-002-테스트-프레임워크-Vitest-도입.md), [ADR-003](./docs/decisions/ADR-003-BookSpec-UID-Sandbox-직접-검증.md)
+관련 기술 결정: [ADR-001](./docs/decisions/ADR-001-프론트엔드-백엔드-분리와-기술-스택-선정.md), [ADR-002](./docs/decisions/ADR-002-테스트-프레임워크-Vitest-도입.md), [ADR-003](./docs/decisions/ADR-003-BookSpec-UID-Sandbox-직접-검증.md), [ADR-005](./docs/decisions/ADR-005-Docker-Compose-컨테이너화.md)
 
 ## 사용한 Book Print API 엔드포인트
 
@@ -179,6 +181,27 @@ PR이 열리면 GitHub Actions CI가 자동으로 실행됩니다.
 **Branch Protection 설정 방법** (GitHub → Settings → Branches → main):
 1. `Require status checks to pass before merging` 활성화
 2. Required checks에 `API — 테스트 · 빌드`, `Web — 린트 · 타입체크` 추가
+
+## Docker로 실행하기
+
+Docker와 Docker Compose가 설치되어 있으면 한 명령으로 전체 앱을 실행할 수 있습니다.
+
+```bash
+# 1. 환경변수 파일 준비
+cp .env.example .env
+# .env에 SWEETBOOK_API_KEY 등 값을 설정
+
+# 2. 컨테이너 빌드 및 실행
+docker compose up --build
+```
+
+실행 후 접속:
+- 프론트엔드: `http://localhost:3000`
+- API 서버: `http://localhost:4000/health`
+
+종료: `Ctrl+C` 또는 `docker compose down`
+
+> `.env` 파일은 `docker-compose.yml`의 `env_file`로 각 컨테이너에 주입됩니다.
 
 ## 스크립트
 
