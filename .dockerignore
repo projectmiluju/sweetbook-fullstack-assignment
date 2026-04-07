@@ -1,0 +1,16 @@
+node_modules
+.next
+dist
+build
+coverage
+*.tsbuildinfo
+.env
+.env.local
+.env.*.local
+.git
+.gitignore
+.idea
+.vscode
+.DS_Store
+*.log
+docs
