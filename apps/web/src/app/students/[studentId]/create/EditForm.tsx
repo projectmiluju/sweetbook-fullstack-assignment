@@ -145,16 +145,13 @@ export default function EditForm({ bookType, studentName, cohortId, studentId, p
   }
 
   return (
-    <aside className="rounded-[1.75rem] bg-[linear-gradient(145deg,#fffaf1,#f4e7cf)] px-6 py-6 shadow-[0_18px_42px_var(--shadow-tint)]">
-      <p className="text-xs font-semibold tracking-[0.16em] text-[color:var(--accent)] uppercase">편집</p>
-      <h2 className="font-display mt-3 text-2xl tracking-tight text-neutral-950">{bookTypeInfo.title}</h2>
+    <aside className="animate-fade-up delay-2 rounded-2xl border border-[color:var(--accent)]/15 bg-gradient-to-b from-[color:var(--accent-soft)] to-[color:var(--surface)] p-7 shadow-[0_2px_16px_var(--shadow-tint)]">
+      <p className="text-[10px] font-semibold tracking-[0.2em] text-[color:var(--accent)] uppercase">편집</p>
+      <h2 className="font-display mt-3 text-2xl font-bold tracking-tight text-[color:var(--foreground)]">{bookTypeInfo.title}</h2>
 
-      <div className="mt-5 space-y-4">
+      <div className="mt-6 space-y-5">
         <div>
-          <label
-            htmlFor="coverTitle"
-            className="block text-xs font-semibold tracking-[0.14em] text-[color:var(--accent)] uppercase"
-          >
+          <label htmlFor="coverTitle" className="block text-[10px] font-semibold tracking-[0.18em] text-[color:var(--accent)] uppercase">
             표지 제목
           </label>
           <textarea
@@ -162,15 +159,12 @@ export default function EditForm({ bookType, studentName, cohortId, studentId, p
             value={session.customText.coverTitle}
             onChange={(e) => handleCoverTitleChange(e.target.value)}
             rows={2}
-            className="mt-2 w-full resize-none rounded-[1rem] border border-black/8 bg-white/70 px-3 py-2 text-sm text-neutral-950 placeholder-neutral-400 outline-none focus:border-[color:var(--accent)] focus:ring-1 focus:ring-[color:var(--accent)]"
+            className="mt-2 w-full resize-none rounded-lg border border-[color:var(--border-mid)] bg-[color:var(--surface)] px-3 py-2.5 text-sm text-[color:var(--foreground)] placeholder-[color:var(--text-dim)] outline-none focus:border-[color:var(--accent)] focus:ring-1 focus:ring-[color:var(--accent)]"
           />
         </div>
 
         <div>
-          <label
-            htmlFor="graduationMessage"
-            className="block text-xs font-semibold tracking-[0.14em] text-[color:var(--accent)] uppercase"
-          >
+          <label htmlFor="graduationMessage" className="block text-[10px] font-semibold tracking-[0.18em] text-[color:var(--accent)] uppercase">
             기념 수료 문구
           </label>
           <textarea
@@ -178,15 +172,13 @@ export default function EditForm({ bookType, studentName, cohortId, studentId, p
             value={session.customText.graduationMessage}
             onChange={(e) => handleGraduationMessageChange(e.target.value)}
             rows={3}
-            className="mt-2 w-full resize-none rounded-[1rem] border border-black/8 bg-white/70 px-3 py-2 text-sm text-neutral-950 placeholder-neutral-400 outline-none focus:border-[color:var(--accent)] focus:ring-1 focus:ring-[color:var(--accent)]"
+            className="mt-2 w-full resize-none rounded-lg border border-[color:var(--border-mid)] bg-[color:var(--surface)] px-3 py-2.5 text-sm text-[color:var(--foreground)] placeholder-[color:var(--text-dim)] outline-none focus:border-[color:var(--accent)] focus:ring-1 focus:ring-[color:var(--accent)]"
           />
         </div>
 
         {projects.length > 0 && (
           <div>
-            <p className="block text-xs font-semibold tracking-[0.14em] text-[color:var(--accent)] uppercase">
-              프로젝트 포함 여부
-            </p>
+            <p className="block text-[10px] font-semibold tracking-[0.18em] text-[color:var(--accent)] uppercase">프로젝트 포함 여부</p>
             <div className="mt-2 space-y-2">
               {projects.map((project, index) => {
                 const blockId = buildProjectBlockId(index);
@@ -196,14 +188,14 @@ export default function EditForm({ bookType, studentName, cohortId, studentId, p
                     key={blockId}
                     type="button"
                     onClick={() => handleToggleBlock(blockId)}
-                    className={`flex w-full items-center justify-between rounded-[1rem] border px-3 py-2.5 text-left text-sm transition-colors ${
+                    className={`flex w-full items-center justify-between rounded-lg border px-3 py-2.5 text-left text-sm hover:scale-[1.01] ${
                       hidden
-                        ? "border-black/8 bg-white/40 text-neutral-400"
-                        : "border-[color:var(--accent)]/20 bg-white/70 text-neutral-950"
+                        ? "border-[color:var(--border-soft)] bg-[color:var(--surface-elevated)] text-[color:var(--text-dim)]"
+                        : "border-[color:var(--accent)]/15 bg-[color:var(--accent-soft)] text-[color:var(--foreground)]"
                     }`}
                   >
                     <span className="font-medium">{project.title}</span>
-                    <span className={`text-xs font-semibold ${hidden ? "text-neutral-400" : "text-[color:var(--accent)]"}`}>
+                    <span className={`text-xs font-semibold ${hidden ? "text-[color:var(--text-dim)]" : "text-[color:var(--accent)]"}`}>
                       {hidden ? "제외" : "포함"}
                     </span>
                   </button>
@@ -215,9 +207,7 @@ export default function EditForm({ bookType, studentName, cohortId, studentId, p
 
         {photos.length > 0 && (
           <div>
-            <p className="block text-xs font-semibold tracking-[0.14em] text-[color:var(--accent)] uppercase">
-              사진 포함 여부
-            </p>
+            <p className="block text-[10px] font-semibold tracking-[0.18em] text-[color:var(--accent)] uppercase">사진 포함 여부</p>
             <div className="mt-2 space-y-2">
               {photos.map((photo, index) => {
                 const blockId = buildPhotoBlockId(index);
@@ -227,14 +217,14 @@ export default function EditForm({ bookType, studentName, cohortId, studentId, p
                     key={blockId}
                     type="button"
                     onClick={() => handleToggleBlock(blockId)}
-                    className={`flex w-full items-center justify-between rounded-[1rem] border px-3 py-2.5 text-left text-sm transition-colors ${
+                    className={`flex w-full items-center justify-between rounded-lg border px-3 py-2.5 text-left text-sm hover:scale-[1.01] ${
                       hidden
-                        ? "border-black/8 bg-white/40 text-neutral-400"
-                        : "border-[color:var(--accent)]/20 bg-white/70 text-neutral-950"
+                        ? "border-[color:var(--border-soft)] bg-[color:var(--surface-elevated)] text-[color:var(--text-dim)]"
+                        : "border-[color:var(--accent)]/15 bg-[color:var(--accent-soft)] text-[color:var(--foreground)]"
                     }`}
                   >
                     <span className="font-medium">사진 {index + 1}</span>
-                    <span className={`text-xs font-semibold ${hidden ? "text-neutral-400" : "text-[color:var(--accent)]"}`}>
+                    <span className={`text-xs font-semibold ${hidden ? "text-[color:var(--text-dim)]" : "text-[color:var(--accent)]"}`}>
                       {hidden ? "제외" : "포함"}
                     </span>
                   </button>
@@ -246,25 +236,18 @@ export default function EditForm({ bookType, studentName, cohortId, studentId, p
 
         {session.pages.length > 0 && (
           <div>
-            <p className="block text-xs font-semibold tracking-[0.14em] text-[color:var(--accent)] uppercase">
-              페이지 순서
-            </p>
+            <p className="block text-[10px] font-semibold tracking-[0.18em] text-[color:var(--accent)] uppercase">페이지 순서</p>
             <div className="mt-2 space-y-2">
               {session.pages.map((pageId, index) => (
-                <div
-                  key={pageId}
-                  className="flex items-center gap-2 rounded-[1rem] border border-black/8 bg-white/70 px-3 py-2.5"
-                >
-                  <span className="flex-1 text-sm font-medium text-neutral-950">
-                    {getPageLabel(pageId)}
-                  </span>
+                <div key={pageId} className="flex items-center gap-2 rounded-lg border border-[color:var(--border-soft)] bg-[color:var(--surface)] px-3 py-2.5">
+                  <span className="flex-1 text-sm font-medium text-[color:var(--foreground)]">{getPageLabel(pageId)}</span>
                   <div className="flex gap-1">
                     <button
                       type="button"
                       onClick={() => handleMovePage(index, "up")}
                       disabled={index === 0}
                       aria-label="위로 이동"
-                      className="flex h-6 w-6 items-center justify-center rounded-full text-xs text-[color:var(--accent)] transition-colors hover:bg-[color:var(--accent)]/10 disabled:cursor-not-allowed disabled:opacity-30"
+                      className="flex h-7 w-7 items-center justify-center rounded text-xs text-[color:var(--accent)] hover:bg-[color:var(--accent-soft)] disabled:cursor-not-allowed disabled:opacity-30"
                     >
                       ▲
                     </button>
@@ -273,7 +256,7 @@ export default function EditForm({ bookType, studentName, cohortId, studentId, p
                       onClick={() => handleMovePage(index, "down")}
                       disabled={index === session.pages.length - 1}
                       aria-label="아래로 이동"
-                      className="flex h-6 w-6 items-center justify-center rounded-full text-xs text-[color:var(--accent)] transition-colors hover:bg-[color:var(--accent)]/10 disabled:cursor-not-allowed disabled:opacity-30"
+                      className="flex h-7 w-7 items-center justify-center rounded text-xs text-[color:var(--accent)] hover:bg-[color:var(--accent-soft)] disabled:cursor-not-allowed disabled:opacity-30"
                     >
                       ▼
                     </button>
@@ -287,65 +270,48 @@ export default function EditForm({ bookType, studentName, cohortId, studentId, p
 
       {bookStatus === "success" && bookUid ? (
         <div className="mt-6 space-y-3">
-          <div className="rounded-[1rem] border border-[color:var(--accent)]/20 bg-white/70 px-4 py-3">
-            <p className="text-xs font-semibold tracking-[0.14em] text-[color:var(--accent)] uppercase">
-              {TEXT.successLabel}
-            </p>
-            <p className="mt-1 break-all text-xs text-neutral-500">{bookUid}</p>
+          <div className="rounded-lg border border-[color:var(--accent)]/15 bg-[color:var(--accent-soft)] px-4 py-3">
+            <p className="text-[10px] font-semibold tracking-[0.18em] text-[color:var(--accent)] uppercase">{TEXT.successLabel}</p>
+            <p className="mt-1 break-all text-xs text-[color:var(--text-dim)]">{bookUid}</p>
           </div>
 
           {orderStatus === "success" && orderUid ? (
-            <div className="rounded-[1rem] border border-green-300 bg-green-50 px-4 py-3">
-              <p className="text-xs font-semibold tracking-[0.14em] text-green-700 uppercase">
-                {TEXT.orderSuccessLabel}
-              </p>
-              <p className="mt-1 break-all text-xs text-neutral-500">{orderUid}</p>
+            <div className="rounded-lg border border-[color:var(--success)]/15 bg-[color:var(--success-soft)] px-4 py-3">
+              <p className="text-[10px] font-semibold tracking-[0.18em] text-[color:var(--success)] uppercase">{TEXT.orderSuccessLabel}</p>
+              <p className="mt-1 break-all text-xs text-[color:var(--text-dim)]">{orderUid}</p>
             </div>
           ) : (
             <>
               <div className="space-y-2">
-                <p className="text-xs font-semibold tracking-[0.14em] text-[color:var(--accent)] uppercase">
-                  {TEXT.shippingTitle}
-                </p>
-                {(
-                  [
-                    { id: "recipientName", label: TEXT.recipientName, key: "recipientName" as const },
-                    { id: "recipientPhone", label: TEXT.recipientPhone, key: "recipientPhone" as const },
-                    { id: "address1", label: TEXT.address1, key: "address1" as const },
-                    { id: "postalCode", label: TEXT.postalCode, key: "postalCode" as const },
-                  ]
-                ).map(({ id, label, key }) => (
+                <p className="text-[10px] font-semibold tracking-[0.18em] text-[color:var(--accent)] uppercase">{TEXT.shippingTitle}</p>
+                {([
+                  { id: "recipientName", label: TEXT.recipientName, key: "recipientName" as const },
+                  { id: "recipientPhone", label: TEXT.recipientPhone, key: "recipientPhone" as const },
+                  { id: "address1", label: TEXT.address1, key: "address1" as const },
+                  { id: "postalCode", label: TEXT.postalCode, key: "postalCode" as const },
+                ]).map(({ id, label, key }) => (
                   <div key={id}>
-                    <label
-                      htmlFor={id}
-                      className="block text-xs text-neutral-500"
-                    >
-                      {label}
-                    </label>
+                    <label htmlFor={id} className="block text-xs text-[color:var(--text-dim)]">{label}</label>
                     <input
                       id={id}
                       type="text"
                       value={shipping[key]}
                       onChange={(e) => setShipping((prev) => ({ ...prev, [key]: e.target.value }))}
-                      className="mt-1 w-full rounded-[0.75rem] border border-black/8 bg-white/70 px-3 py-2 text-sm text-neutral-950 outline-none focus:border-[color:var(--accent)] focus:ring-1 focus:ring-[color:var(--accent)]"
+                      className="mt-1 w-full rounded-lg border border-[color:var(--border-mid)] bg-[color:var(--surface)] px-3 py-2 text-sm text-[color:var(--foreground)] outline-none focus:border-[color:var(--accent)] focus:ring-1 focus:ring-[color:var(--accent)]"
                     />
                   </div>
                 ))}
               </div>
               {orderStatus === "error" && orderErrorMessage && (
-                <p className="text-sm text-red-600">{orderErrorMessage}</p>
+                <p className="text-sm text-[color:var(--error)]">{orderErrorMessage}</p>
               )}
               <button
                 type="button"
                 onClick={() => { void handleOrder(); }}
                 disabled={orderStatus === "loading"}
-                className="inline-flex w-full items-center justify-center rounded-full bg-[color:var(--accent)] px-5 py-3 text-sm font-medium text-white disabled:opacity-60 disabled:cursor-not-allowed"
+                className="inline-flex w-full items-center justify-center rounded-xl bg-[color:var(--accent)] px-6 py-3.5 text-sm font-semibold text-white shadow-[0_4px_16px_var(--accent-glow)] hover:scale-[1.02] disabled:opacity-60 disabled:cursor-not-allowed"
               >
-                {orderStatus === "loading"
-                  ? TEXT.orderLoading
-                  : orderStatus === "error"
-                    ? TEXT.orderRetry
-                    : TEXT.orderIdle}
+                {orderStatus === "loading" ? TEXT.orderLoading : orderStatus === "error" ? TEXT.orderRetry : TEXT.orderIdle}
               </button>
             </>
           )}
@@ -353,19 +319,15 @@ export default function EditForm({ bookType, studentName, cohortId, studentId, p
       ) : (
         <>
           {bookStatus === "error" && errorMessage && (
-            <p className="mt-4 text-sm text-red-600">{errorMessage}</p>
+            <p className="mt-4 text-sm text-[color:var(--error)]">{errorMessage}</p>
           )}
           <button
             type="button"
             onClick={() => { void handleComplete(); }}
             disabled={bookStatus === "loading"}
-            className="mt-4 inline-flex w-full items-center justify-center rounded-full bg-[color:var(--accent)] px-5 py-3 text-sm font-medium text-white disabled:opacity-60 disabled:cursor-not-allowed"
+            className="mt-5 inline-flex w-full items-center justify-center rounded-xl bg-[color:var(--accent)] px-6 py-3.5 text-sm font-semibold text-white shadow-[0_4px_16px_var(--accent-glow)] hover:scale-[1.02] disabled:opacity-60 disabled:cursor-not-allowed"
           >
-            {bookStatus === "loading"
-              ? TEXT.loading
-              : bookStatus === "error"
-                ? TEXT.retry
-                : TEXT.complete}
+            {bookStatus === "loading" ? TEXT.loading : bookStatus === "error" ? TEXT.retry : TEXT.complete}
           </button>
         </>
       )}

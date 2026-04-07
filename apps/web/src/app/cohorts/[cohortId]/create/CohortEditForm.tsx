@@ -61,24 +61,15 @@ export default function CohortEditForm({ bookType, cohortId, cohortName, cohortS
   const bookTypeInfo = BOOK_TYPE_LABELS[bookType];
 
   function handleCoverTitleChange(value: string) {
-    setSession((prev) => ({
-      ...prev,
-      customText: { ...prev.customText, coverTitle: value }
-    }));
+    setSession((prev) => ({ ...prev, customText: { ...prev.customText, coverTitle: value } }));
   }
 
   function handleCohortIntroChange(value: string) {
-    setSession((prev) => ({
-      ...prev,
-      customText: { ...prev.customText, cohortIntro: value }
-    }));
+    setSession((prev) => ({ ...prev, customText: { ...prev.customText, cohortIntro: value } }));
   }
 
   function handleStaffMessageChange(value: string) {
-    setSession((prev) => ({
-      ...prev,
-      customText: { ...prev.customText, staffMessage: value }
-    }));
+    setSession((prev) => ({ ...prev, customText: { ...prev.customText, staffMessage: value } }));
   }
 
   async function handleOrder() {
@@ -117,122 +108,72 @@ export default function CohortEditForm({ bookType, cohortId, cohortName, cohortS
     }
   }
 
+  const inputClasses = "mt-2 w-full resize-none rounded-lg border border-[color:var(--border-mid)] bg-[color:var(--surface)] px-3 py-2.5 text-sm text-[color:var(--foreground)] placeholder-[color:var(--text-dim)] outline-none focus:border-[color:var(--accent)] focus:ring-1 focus:ring-[color:var(--accent)]";
+
   return (
-    <aside className="rounded-[1.75rem] bg-[linear-gradient(145deg,#fffaf1,#f4e7cf)] px-6 py-6 shadow-[0_18px_42px_var(--shadow-tint)]">
-      <p className="text-xs font-semibold tracking-[0.16em] text-[color:var(--accent)] uppercase">편집</p>
-      <h2 className="font-display mt-3 text-2xl tracking-tight text-neutral-950">{bookTypeInfo.title}</h2>
+    <aside className="animate-fade-up delay-2 rounded-2xl border border-[color:var(--accent)]/15 bg-gradient-to-b from-[color:var(--accent-soft)] to-[color:var(--surface)] p-7 shadow-[0_2px_16px_var(--shadow-tint)]">
+      <p className="text-[10px] font-semibold tracking-[0.2em] text-[color:var(--accent)] uppercase">편집</p>
+      <h2 className="font-display mt-3 text-2xl font-bold tracking-tight text-[color:var(--foreground)]">{bookTypeInfo.title}</h2>
 
-      <div className="mt-5 space-y-4">
+      <div className="mt-6 space-y-5">
         <div>
-          <label
-            htmlFor="cohortCoverTitle"
-            className="block text-xs font-semibold tracking-[0.14em] text-[color:var(--accent)] uppercase"
-          >
-            표지 제목
-          </label>
-          <textarea
-            id="cohortCoverTitle"
-            value={session.customText.coverTitle}
-            onChange={(e) => handleCoverTitleChange(e.target.value)}
-            rows={2}
-            className="mt-2 w-full resize-none rounded-[1rem] border border-black/8 bg-white/70 px-3 py-2 text-sm text-neutral-950 placeholder-neutral-400 outline-none focus:border-[color:var(--accent)] focus:ring-1 focus:ring-[color:var(--accent)]"
-          />
+          <label htmlFor="cohortCoverTitle" className="block text-[10px] font-semibold tracking-[0.18em] text-[color:var(--accent)] uppercase">표지 제목</label>
+          <textarea id="cohortCoverTitle" value={session.customText.coverTitle} onChange={(e) => handleCoverTitleChange(e.target.value)} rows={2} className={inputClasses} />
         </div>
-
         <div>
-          <label
-            htmlFor="cohortIntro"
-            className="block text-xs font-semibold tracking-[0.14em] text-[color:var(--accent)] uppercase"
-          >
-            기수 소개
-          </label>
-          <textarea
-            id="cohortIntro"
-            value={session.customText.cohortIntro ?? ""}
-            onChange={(e) => handleCohortIntroChange(e.target.value)}
-            rows={3}
-            className="mt-2 w-full resize-none rounded-[1rem] border border-black/8 bg-white/70 px-3 py-2 text-sm text-neutral-950 placeholder-neutral-400 outline-none focus:border-[color:var(--accent)] focus:ring-1 focus:ring-[color:var(--accent)]"
-          />
+          <label htmlFor="cohortIntro" className="block text-[10px] font-semibold tracking-[0.18em] text-[color:var(--accent)] uppercase">기수 소개</label>
+          <textarea id="cohortIntro" value={session.customText.cohortIntro ?? ""} onChange={(e) => handleCohortIntroChange(e.target.value)} rows={3} className={inputClasses} />
         </div>
-
         <div>
-          <label
-            htmlFor="staffMessage"
-            className="block text-xs font-semibold tracking-[0.14em] text-[color:var(--accent)] uppercase"
-          >
-            운영진 메시지
-          </label>
-          <textarea
-            id="staffMessage"
-            value={session.customText.staffMessage ?? ""}
-            onChange={(e) => handleStaffMessageChange(e.target.value)}
-            rows={3}
-            className="mt-2 w-full resize-none rounded-[1rem] border border-black/8 bg-white/70 px-3 py-2 text-sm text-neutral-950 placeholder-neutral-400 outline-none focus:border-[color:var(--accent)] focus:ring-1 focus:ring-[color:var(--accent)]"
-          />
+          <label htmlFor="staffMessage" className="block text-[10px] font-semibold tracking-[0.18em] text-[color:var(--accent)] uppercase">운영진 메시지</label>
+          <textarea id="staffMessage" value={session.customText.staffMessage ?? ""} onChange={(e) => handleStaffMessageChange(e.target.value)} rows={3} className={inputClasses} />
         </div>
       </div>
 
       {bookStatus === "success" && bookUid ? (
         <div className="mt-6 space-y-3">
-          <div className="rounded-[1rem] border border-[color:var(--accent)]/20 bg-white/70 px-4 py-3">
-            <p className="text-xs font-semibold tracking-[0.14em] text-[color:var(--accent)] uppercase">
-              {TEXT.successLabel}
-            </p>
-            <p className="mt-1 break-all text-xs text-neutral-500">{bookUid}</p>
+          <div className="rounded-lg border border-[color:var(--accent)]/15 bg-[color:var(--accent-soft)] px-4 py-3">
+            <p className="text-[10px] font-semibold tracking-[0.18em] text-[color:var(--accent)] uppercase">{TEXT.successLabel}</p>
+            <p className="mt-1 break-all text-xs text-[color:var(--text-dim)]">{bookUid}</p>
           </div>
 
           {orderStatus === "success" && orderUid ? (
-            <div className="rounded-[1rem] border border-green-300 bg-green-50 px-4 py-3">
-              <p className="text-xs font-semibold tracking-[0.14em] text-green-700 uppercase">
-                {TEXT.orderSuccessLabel}
-              </p>
-              <p className="mt-1 break-all text-xs text-neutral-500">{orderUid}</p>
+            <div className="rounded-lg border border-[color:var(--success)]/15 bg-[color:var(--success-soft)] px-4 py-3">
+              <p className="text-[10px] font-semibold tracking-[0.18em] text-[color:var(--success)] uppercase">{TEXT.orderSuccessLabel}</p>
+              <p className="mt-1 break-all text-xs text-[color:var(--text-dim)]">{orderUid}</p>
             </div>
           ) : (
             <>
               <div className="space-y-2">
-                <p className="text-xs font-semibold tracking-[0.14em] text-[color:var(--accent)] uppercase">
-                  {TEXT.shippingTitle}
-                </p>
-                {(
-                  [
-                    { id: "cohortRecipientName", label: TEXT.recipientName, key: "recipientName" as const },
-                    { id: "cohortRecipientPhone", label: TEXT.recipientPhone, key: "recipientPhone" as const },
-                    { id: "cohortAddress1", label: TEXT.address1, key: "address1" as const },
-                    { id: "cohortPostalCode", label: TEXT.postalCode, key: "postalCode" as const },
-                  ]
-                ).map(({ id, label, key }) => (
+                <p className="text-[10px] font-semibold tracking-[0.18em] text-[color:var(--accent)] uppercase">{TEXT.shippingTitle}</p>
+                {([
+                  { id: "cohortRecipientName", label: TEXT.recipientName, key: "recipientName" as const },
+                  { id: "cohortRecipientPhone", label: TEXT.recipientPhone, key: "recipientPhone" as const },
+                  { id: "cohortAddress1", label: TEXT.address1, key: "address1" as const },
+                  { id: "cohortPostalCode", label: TEXT.postalCode, key: "postalCode" as const },
+                ]).map(({ id, label, key }) => (
                   <div key={id}>
-                    <label
-                      htmlFor={id}
-                      className="block text-xs text-neutral-500"
-                    >
-                      {label}
-                    </label>
+                    <label htmlFor={id} className="block text-xs text-[color:var(--text-dim)]">{label}</label>
                     <input
                       id={id}
                       type="text"
                       value={shipping[key]}
                       onChange={(e) => setShipping((prev) => ({ ...prev, [key]: e.target.value }))}
-                      className="mt-1 w-full rounded-[0.75rem] border border-black/8 bg-white/70 px-3 py-2 text-sm text-neutral-950 outline-none focus:border-[color:var(--accent)] focus:ring-1 focus:ring-[color:var(--accent)]"
+                      className="mt-1 w-full rounded-lg border border-[color:var(--border-mid)] bg-[color:var(--surface)] px-3 py-2 text-sm text-[color:var(--foreground)] outline-none focus:border-[color:var(--accent)] focus:ring-1 focus:ring-[color:var(--accent)]"
                     />
                   </div>
                 ))}
               </div>
               {orderStatus === "error" && orderErrorMessage && (
-                <p className="text-sm text-red-600">{orderErrorMessage}</p>
+                <p className="text-sm text-[color:var(--error)]">{orderErrorMessage}</p>
               )}
               <button
                 type="button"
                 onClick={() => { void handleOrder(); }}
                 disabled={orderStatus === "loading"}
-                className="inline-flex w-full items-center justify-center rounded-full bg-[color:var(--accent)] px-5 py-3 text-sm font-medium text-white disabled:opacity-60 disabled:cursor-not-allowed"
+                className="inline-flex w-full items-center justify-center rounded-xl bg-[color:var(--accent)] px-6 py-3.5 text-sm font-semibold text-white shadow-[0_4px_16px_var(--accent-glow)] hover:scale-[1.02] disabled:opacity-60 disabled:cursor-not-allowed"
               >
-                {orderStatus === "loading"
-                  ? TEXT.orderLoading
-                  : orderStatus === "error"
-                    ? TEXT.orderRetry
-                    : TEXT.orderIdle}
+                {orderStatus === "loading" ? TEXT.orderLoading : orderStatus === "error" ? TEXT.orderRetry : TEXT.orderIdle}
               </button>
             </>
           )}
@@ -240,19 +181,15 @@ export default function CohortEditForm({ bookType, cohortId, cohortName, cohortS
       ) : (
         <>
           {bookStatus === "error" && errorMessage && (
-            <p className="mt-4 text-sm text-red-600">{errorMessage}</p>
+            <p className="mt-4 text-sm text-[color:var(--error)]">{errorMessage}</p>
           )}
           <button
             type="button"
             onClick={() => { void handleComplete(); }}
             disabled={bookStatus === "loading"}
-            className="mt-4 inline-flex w-full items-center justify-center rounded-full bg-[color:var(--accent)] px-5 py-3 text-sm font-medium text-white disabled:opacity-60 disabled:cursor-not-allowed"
+            className="mt-5 inline-flex w-full items-center justify-center rounded-xl bg-[color:var(--accent)] px-6 py-3.5 text-sm font-semibold text-white shadow-[0_4px_16px_var(--accent-glow)] hover:scale-[1.02] disabled:opacity-60 disabled:cursor-not-allowed"
           >
-            {bookStatus === "loading"
-              ? TEXT.loading
-              : bookStatus === "error"
-                ? TEXT.retry
-                : TEXT.complete}
+            {bookStatus === "loading" ? TEXT.loading : bookStatus === "error" ? TEXT.retry : TEXT.complete}
           </button>
         </>
       )}
