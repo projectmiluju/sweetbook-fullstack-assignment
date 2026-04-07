@@ -1,11 +1,12 @@
 # 프로젝트 현황
 
-**최종 업데이트:** 2026-04-07 (Issue #63 Docker Compose 컨테이너화 완료)
+**최종 업데이트:** 2026-04-07 (Issue #64 기수 데이터 JSON 전환 완료)
 **현재 버전:** v0.1.0
 **배포 URL:** 없음
 
 ## 최근 변경
 
+- `#64` 기수 데이터 JSON 전환 DoD 완료: `apps/api/data/cohorts.json` 신규 생성, `cohorts.ts`를 JSON 로더 + 타입 정의 파일로 변경, `__dirname` 기반 경로 해석으로 dev/prod 모두 동작. JSON 로더 테스트 6개 추가 (총 91개).
 - `#63` Docker Compose 컨테이너화 DoD 완료: `apps/api/Dockerfile` + `apps/web/Dockerfile` (멀티스테이지 빌드) + `docker-compose.yml` + `.dockerignore` 신규 추가. `next.config.ts`에 `output: "standalone"` 추가. pnpm 모노레포 심링크 문제를 `pnpm deploy --legacy`로 해결. `docker compose up`으로 api(4000) + web(3000) 동시 기동 확인. (ADR-005)
 - `#66` GitHub Actions CI 구축 DoD 완료: `.github/workflows/ci.yml` 신규 추가. `api` job — pnpm install → `pnpm test` (Vitest 85개) → `pnpm build`. `web` job — pnpm install → `pnpm lint` (ESLint) → `tsc --noEmit`. Node 20, pnpm 10, 캐시 설정 포함. README에 CI 뱃지 + Branch Protection 설정 안내 추가.
 - `#60` MVP 수동 테스트 DoD 완료: `POST /api/books` 502 버그 3건 수정 (createDraft 응답 파싱, 템플릿 재선정, pageCount 오프셋 보정). vitest 설정에서 `dist/` stale 테스트 제거. `sweetbook-books.test.ts` 신규 추가 (21개). api 테스트 총 85개. ADR-004 작성 (ADR-003 supersede). 주문까지 전체 E2E 흐름 수동 검증 완료.
@@ -54,6 +55,8 @@
 
 ## 다음 계획
 
+- [x] `#64` 기수 데이터 JSON 전환 DoD 완료
+- [ ] `#64` PR 머지 (`feat/#64-json-data`)
 - [x] `#63` Docker Compose 컨테이너화 DoD 완료
 - [ ] `#63` PR 머지 (`feat/#63-docker-compose`)
 - [x] `#66` GitHub Actions CI 구축 DoD 완료

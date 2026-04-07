@@ -72,9 +72,10 @@ pnpm dev:web
 .
 ├── apps
 │   ├── api        # Express + TypeScript 백엔드
+│   │   ├── data/              # 기수/수료생 JSON 데이터
 │   │   └── src
 │   │       ├── config/        # BookSpec 상수
-│   │       ├── data/          # 더미 기수/수료생 데이터
+│   │       ├── data/          # JSON 로더 + 타입 정의
 │   │       ├── lib/           # SweetBookClient, 오케스트레이터, payload 매퍼
 │   │       └── server.ts      # Express 라우트
 │   └── web        # Next.js + TypeScript 프론트엔드
