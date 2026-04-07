@@ -47,6 +47,7 @@ cp .env.example .env
 | `PORT` | API 서버 포트 (기본: `4000`) |
 | `BOOK_SPEC_UID` | Books API 오케스트레이션에 사용할 판형 UID (Sandbox 기준: `PHOTOBOOK_A4_SC`) |
 | `COVER_TEMPLATE_UID` | 표지 templateUid (Sandbox 기준: `3S1ceGaglj5i` — 구글포토북A) |
+| `CONTENTS_TEMPLATE_UID` | 내지 contents templateUid |
 | `CONTENT_TEMPLATE_UID` | 내지 templateUid (Sandbox 기준: `3mjKd8kcaVzT` — 내지b) |
 | `BLANK_TEMPLATE_UID` | 예비 빈 내지 templateUid (Sandbox 기준: `2lpHl6oLAYss`) |
 
