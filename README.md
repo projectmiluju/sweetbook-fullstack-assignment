@@ -99,6 +99,7 @@ pnpm dev:web
 - **백엔드:** Express + TypeScript
 - **스타일링:** Tailwind CSS
 - **테스트:** Vitest
+- **로깅:** pino + pino-http (구조화 JSON 로그)
 - **데이터 저장:** 정적 더미 데이터
 - **패키지 매니저:** pnpm workspace
 - **컨테이너:** Docker Compose (멀티스테이지 빌드)
