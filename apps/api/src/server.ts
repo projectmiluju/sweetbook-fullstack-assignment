@@ -1,6 +1,9 @@
 import cors from "cors";
 import dotenv from "dotenv";
 import express, { type Request, type Response } from "express";
+import { pinoHttp } from "pino-http";
+
+import { logger } from "./lib/logger.js";
 
 import { getEnv, loadEnv } from "./config/env.js";
 import { cohorts } from "./data/cohorts.js";
@@ -19,6 +22,7 @@ const port = env.PORT;
 const inProgressKeys = new Set<string>();
 
 app.use(cors());
+app.use(pinoHttp({ logger }));
 app.use(express.json());
 
 app.get("/health", (_request: Request, response: Response) => {
@@ -119,12 +123,14 @@ app.post("/api/books", async (request: Request, response: Response) => {
         : (typeof error.cause === "object" && error.cause !== null)
           ? JSON.stringify(error.cause)
           : String(error.cause ?? "");
+      logger.error({ step: error.step, cause: causeMessage }, error.message);
       response.status(502).json({
         message: error.message,
         step: error.step,
         cause: causeMessage,
       });
     } else {
+      logger.error({ error }, "알 수 없는 오류가 발생했습니다.");
       response.status(500).json({ message: "알 수 없는 오류가 발생했습니다." });
     }
   } finally {
@@ -139,7 +145,8 @@ app.get("/api/credits", async (_request: Request, response: Response) => {
   try {
     const credits = await client.getCredits();
     response.json({ balance: credits.balance, currency: credits.currency });
-  } catch {
+  } catch (error) {
+    logger.error({ error }, "잔액 조회에 실패했습니다.");
     response.status(502).json({ message: "잔액 조회에 실패했습니다." });
   }
 });
@@ -178,10 +185,11 @@ app.post("/api/orders", async (request: Request, response: Response) => {
     response.json(result);
   } catch (error) {
     const message = error instanceof Error ? error.message : "주문 생성에 실패했습니다.";
+    logger.error({ error }, "주문 생성에 실패했습니다.");
     response.status(502).json({ message });
   }
 });
 
 app.listen(port, () => {
-  process.stdout.write(`API server listening on http://localhost:${port}\n`);
+  logger.info({ port }, "API server listening");
 });
