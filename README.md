@@ -24,6 +24,7 @@
 
 - Node.js 20 이상
 - pnpm 10 이상
+- Docker (PostgreSQL 실행용)
 
 ### 설치
 
@@ -41,6 +42,7 @@ cp .env.example .env
 
 | 변수 | 설명 |
 |------|------|
+| `DATABASE_URL` | PostgreSQL 연결 URL (기본: `postgresql://sweetbook:sweetbook@localhost:5432/sweetbook`) |
 | `SWEETBOOK_API_KEY` | SweetBook Sandbox API Key |
 | `SWEETBOOK_API_BASE_URL` | SweetBook API 베이스 URL (기본: `https://api-sandbox.sweetbook.com/v1`) |
 | `NEXT_PUBLIC_APP_API_BASE_URL` | 프론트엔드에서 바라보는 내부 API 주소 (기본: `http://localhost:4000`) |
@@ -50,6 +52,19 @@ cp .env.example .env
 | `CONTENTS_TEMPLATE_UID` | 내지 contents templateUid |
 | `CONTENT_TEMPLATE_UID` | 내지 templateUid (Sandbox 기준: `3mjKd8kcaVzT` — 내지b) |
 | `BLANK_TEMPLATE_UID` | 예비 빈 내지 templateUid (Sandbox 기준: `2lpHl6oLAYss`) |
+
+### 데이터베이스 실행
+
+```bash
+# PostgreSQL 컨테이너 시작
+docker compose up db -d
+
+# Prisma 마이그레이션 + 초기 데이터 적재
+cd apps/api
+npx prisma migrate dev
+npx prisma db seed
+cd ../..
+```
 
 ### 실행
 
@@ -73,12 +88,13 @@ pnpm dev:web
 .
 ├── apps
 │   ├── api        # Express + TypeScript 백엔드
-│   │   ├── data/              # 기수/수료생 JSON 데이터
-│   │   └── src
-│   │       ├── config/        # BookSpec 상수
+│   │   ├── data/              # 기수/수료생 JSON 데이터 (seed 소스)
+│   │   ├── prisma/            # Prisma 스키마, 마이그레이션, seed
+��   │   └── src
+│   │       ├── config/        # BookSpec 상수, 환경변수 검증
 │   │       ├── data/          # JSON 로더 + 타입 정의
-│   │       ├── lib/           # SweetBookClient, 오케스트레이터, payload 매퍼
-│   │       └── server.ts      # Express 라우트
+│   │       ├── lib/           # SweetBookClient, 오케스트레이터, payload 매퍼, Prisma 클라이언트
+│   │       └── server.ts      # Express 라우트 (Prisma DB 조회)
 │   └── web        # Next.js + TypeScript 프론트엔드
 │       └── src
 │           ├── app/           # Next.js App Router 페이지
@@ -100,12 +116,12 @@ pnpm dev:web
 - **스타일링:** Tailwind CSS
 - **테스트:** Vitest
 - **로깅:** pino + pino-http (구조화 JSON 로그)
-- **데이터 저장:** 정적 더미 데이터
+- **데이터베이스:** PostgreSQL 16 + Prisma ORM
 - **패키지 매니저:** pnpm workspace
 - **컨테이너:** Docker Compose (멀티스테이지 빌드)
 - **외부 API:** SweetBook Books API, Orders API, BookSpecs API, Credits API
 
-관련 기술 결정: [ADR-001](./docs/decisions/ADR-001-프론트엔드-백엔드-분리와-기술-스택-선정.md), [ADR-002](./docs/decisions/ADR-002-테스트-프레임워크-Vitest-도입.md), [ADR-003](./docs/decisions/ADR-003-BookSpec-UID-Sandbox-직접-검증.md), [ADR-005](./docs/decisions/ADR-005-Docker-Compose-컨테이너화.md)
+관련 기술 결정: [ADR-001](./docs/decisions/ADR-001-프론트엔드-백엔드-분리와-기술-스택-선정.md), [ADR-002](./docs/decisions/ADR-002-테스트-프레임워크-Vitest-도입.md), [ADR-003](./docs/decisions/ADR-003-BookSpec-UID-Sandbox-직접-검증.md), [ADR-005](./docs/decisions/ADR-005-Docker-Compose-컨테이너화.md), [ADR-007](./docs/decisions/ADR-007-PostgreSQL-Prisma-도입.md)
 
 ## 사용한 Book Print API 엔드포인트
 

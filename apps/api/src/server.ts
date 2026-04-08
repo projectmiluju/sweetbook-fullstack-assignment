@@ -6,7 +6,7 @@ import { pinoHttp } from "pino-http";
 import { logger } from "./lib/logger.js";
 
 import { getEnv, loadEnv } from "./config/env.js";
-import { cohorts } from "./data/cohorts.js";
+import { getPrisma } from "./lib/prisma.js";
 import { orchestrateBook, OrchestrationError } from "./lib/orchestrate-book.js";
 import type { OrchestrationInput } from "./lib/orchestrate-book.js";
 import { createSweetBookClient } from "./lib/sweetbook-api.js";
@@ -17,6 +17,10 @@ dotenv.config({ path: "../../.env" });
 const env = loadEnv();
 const app = express();
 const port = env.PORT;
+
+function formatDate(date: Date): string {
+  return date.toISOString().slice(0, 10);
+}
 
 // 진행 중인 책 생성 요청을 추적 (중복 요청 차단)
 const inProgressKeys = new Set<string>();
@@ -29,58 +33,137 @@ app.get("/health", (_request: Request, response: Response) => {
   response.json({ ok: true });
 });
 
-app.get("/api/cohorts", (_request: Request, response: Response) => {
-  response.json({
-    cohorts: cohorts.map((cohort) => ({
-      id: cohort.id,
-      name: cohort.name,
-      program: cohort.program,
-      graduationDate: cohort.graduationDate,
-      summary: cohort.summary,
-      tagline: cohort.tagline,
-      studentCount: cohort.students.length
-    }))
-  });
+app.get("/api/cohorts", async (_request: Request, response: Response) => {
+  try {
+    const db = getPrisma();
+    const cohorts = await db.cohort.findMany({ orderBy: { createdAt: "asc" } });
+    const cohortsWithCount = await Promise.all(
+      cohorts.map(async (cohort: { id: string; name: string; program: string; graduationDate: Date; summary: string; tagline: string }) => {
+        const studentCount = await db.student.count({ where: { cohortId: cohort.id } });
+        return {
+          id: cohort.id,
+          name: cohort.name,
+          program: cohort.program,
+          graduationDate: formatDate(cohort.graduationDate),
+          summary: cohort.summary,
+          tagline: cohort.tagline,
+          studentCount,
+        };
+      })
+    );
+    response.json({ cohorts: cohortsWithCount });
+  } catch (error) {
+    logger.error({ error }, "기수 목록 조회에 실패했습니다.");
+    response.status(500).json({ message: "기수 목록 조회에 실패했습니다." });
+  }
 });
 
-app.get("/api/cohorts/:id", (request: Request, response: Response) => {
-  const cohort = cohorts.find((item) => item.id === request.params.id);
+app.get("/api/cohorts/:id", async (request: Request, response: Response) => {
+  try {
+    const cohortId = request.params.id as string;
+    const cohort = await getPrisma().cohort.findUnique({
+      where: { id: cohortId },
+    });
 
-  if (!cohort) {
-    response.status(404).json({ message: "기수를 찾을 수 없습니다." });
-    return;
+    if (!cohort) {
+      response.status(404).json({ message: "기수를 찾을 수 없습니다." });
+      return;
+    }
+
+    const db = getPrisma();
+    const students = await db.student.findMany({
+      where: { cohortId },
+      orderBy: { createdAt: "asc" },
+    });
+
+    const studentsWithCount = await Promise.all(
+      students.map(async (s: { id: string; name: string; roleTrack: string; bio: string }) => {
+        const projectCount = await db.project.count({ where: { studentId: s.id } });
+        const firstProject = await db.project.findFirst({ where: { studentId: s.id }, orderBy: { createdAt: "asc" } });
+        return {
+          id: s.id,
+          name: s.name,
+          roleTrack: s.roleTrack,
+          bio: s.bio,
+          projectCount,
+          primaryProjectTitle: firstProject?.title ?? "대표 프로젝트 준비 중",
+        };
+      })
+    );
+
+    response.json({
+      cohort: {
+        id: cohort.id,
+        name: cohort.name,
+        program: cohort.program,
+        graduationDate: formatDate(cohort.graduationDate),
+        summary: cohort.summary,
+        tagline: cohort.tagline,
+        operatorMessage: cohort.operatorMessage,
+        philosophy: cohort.philosophy,
+        logoUrl: cohort.logoUrl,
+        photos: cohort.photos,
+        partnerInfo: cohort.partnerInfo,
+        stats: cohort.stats,
+        studentCount: studentsWithCount.length,
+        students: studentsWithCount,
+      },
+    });
+  } catch (error) {
+    logger.error({ error }, "기수 상세 조회에 실패했습니다.");
+    response.status(500).json({ message: "기수 상세 조회에 실패했습니다." });
   }
+});
 
-  response.json({
-    cohort: {
-      id: cohort.id,
-      name: cohort.name,
-      program: cohort.program,
-      graduationDate: cohort.graduationDate,
-      summary: cohort.summary,
-      tagline: cohort.tagline,
-      studentCount: cohort.students.length,
-      students: cohort.students.map((student) => ({
+app.get("/api/students/:id", async (request: Request, response: Response) => {
+  try {
+    const studentId = request.params.id as string;
+    const student = await getPrisma().student.findUnique({
+      where: { id: studentId },
+    });
+
+    if (!student) {
+      response.status(404).json({ message: "수료생을 찾을 수 없습니다." });
+      return;
+    }
+
+    const projects = await getPrisma().project.findMany({
+      where: { studentId },
+      orderBy: { createdAt: "asc" },
+    });
+
+    response.json({
+      student: {
         id: student.id,
         name: student.name,
         roleTrack: student.roleTrack,
         bio: student.bio,
-        projectCount: student.projects.length,
-        primaryProjectTitle: student.projects[0]?.title ?? "대표 프로젝트 준비 중"
-      }))
-    }
-  });
-});
-
-app.get("/api/students/:id", (request: Request, response: Response) => {
-  const student = cohorts.flatMap((cohort) => cohort.students).find((item) => item.id === request.params.id);
-
-  if (!student) {
-    response.status(404).json({ message: "수료생을 찾을 수 없습니다." });
-    return;
+        techStack: student.techStack,
+        mentorComment: student.mentorComment,
+        photos: student.photos,
+        certificateMessage: student.certificateMessage,
+        retrospective: student.retrospective,
+        interests: student.interests,
+        achievements: student.achievements,
+        portfolioLinks: student.portfolioLinks,
+        thanksMessage: student.thanksMessage,
+        projects: projects.map((p: { id: string; title: string; summary: string; contribution: string; links: string[]; problem: string | null; solution: string | null; techChoices: string[]; result: string | null }) => ({
+          id: p.id,
+          title: p.title,
+          summary: p.summary,
+          contribution: p.contribution,
+          links: p.links,
+          problem: p.problem,
+          solution: p.solution,
+          techChoices: p.techChoices,
+          result: p.result,
+        })),
+      },
+    });
+  } catch (error) {
+    logger.error({ error }, "수료생 상세 조회에 실패했습니다.");
+    response.status(500).json({ message: "수료생 상세 조회에 실패했습니다." });
   }
-
-  response.json({ student });
 });
 
 app.post("/api/books", async (request: Request, response: Response) => {
