@@ -8,15 +8,12 @@ import type { BookTypeId } from "@/lib/book-types";
 import { BOOK_TYPE_LABELS } from "@/lib/book-types";
 import {
   buildDefaultPages,
-  buildPhotoBlockId,
-  buildProjectBlockId,
   createDefaultEditSession,
-  getPageLabel as getPageLabelUtil,
-  isBlockHidden,
   movePage,
   toggleHiddenBlock
 } from "@/lib/edit-session";
 import type { EditSession } from "@/lib/edit-session";
+import PageBlockList from "@/components/PageBlockList";
 
 type BookCreateStatus = "idle" | "loading" | "success" | "error";
 type OrderStatus = "idle" | "loading" | "success" | "error";
@@ -80,10 +77,7 @@ export default function EditForm({ bookType, studentName, cohortId, studentId, p
     }));
   }
 
-  function getPageLabel(pageId: string): string {
-    const projectTitles = projects.map((p) => p.title);
-    return getPageLabelUtil(pageId, projectTitles);
-  }
+  const projectTitles = projects.map((p) => p.title);
 
   function handleMovePage(index: number, direction: "up" | "down") {
     setSession((prev) => ({
@@ -168,96 +162,13 @@ export default function EditForm({ bookType, studentName, cohortId, studentId, p
           />
         </div>
 
-        {projects.length > 0 && (
-          <div>
-            <p className="block text-[10px] font-semibold tracking-[0.18em] text-[color:var(--accent)] uppercase">프로젝트 포함 여부</p>
-            <div className="mt-2 space-y-2">
-              {projects.map((project, index) => {
-                const blockId = buildProjectBlockId(index);
-                const hidden = isBlockHidden(session.hiddenBlocks, blockId);
-                return (
-                  <button
-                    key={blockId}
-                    type="button"
-                    onClick={() => handleToggleBlock(blockId)}
-                    className={`flex w-full items-center justify-between rounded-lg border px-3 py-2.5 text-left text-sm hover:scale-[1.01] ${
-                      hidden
-                        ? "border-[color:var(--border-soft)] bg-[color:var(--surface-elevated)] text-[color:var(--text-dim)]"
-                        : "border-[color:var(--accent)]/15 bg-[color:var(--accent-soft)] text-[color:var(--foreground)]"
-                    }`}
-                  >
-                    <span className="font-medium">{project.title}</span>
-                    <span className={`text-xs font-semibold ${hidden ? "text-[color:var(--text-dim)]" : "text-[color:var(--accent)]"}`}>
-                      {hidden ? "제외" : "포함"}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        )}
-
-        {photos.length > 0 && (
-          <div>
-            <p className="block text-[10px] font-semibold tracking-[0.18em] text-[color:var(--accent)] uppercase">사진 포함 여부</p>
-            <div className="mt-2 space-y-2">
-              {photos.map((photo, index) => {
-                const blockId = buildPhotoBlockId(index);
-                const hidden = isBlockHidden(session.hiddenBlocks, blockId);
-                return (
-                  <button
-                    key={blockId}
-                    type="button"
-                    onClick={() => handleToggleBlock(blockId)}
-                    className={`flex w-full items-center justify-between rounded-lg border px-3 py-2.5 text-left text-sm hover:scale-[1.01] ${
-                      hidden
-                        ? "border-[color:var(--border-soft)] bg-[color:var(--surface-elevated)] text-[color:var(--text-dim)]"
-                        : "border-[color:var(--accent)]/15 bg-[color:var(--accent-soft)] text-[color:var(--foreground)]"
-                    }`}
-                  >
-                    <span className="font-medium">사진 {index + 1}</span>
-                    <span className={`text-xs font-semibold ${hidden ? "text-[color:var(--text-dim)]" : "text-[color:var(--accent)]"}`}>
-                      {hidden ? "제외" : "포함"}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        )}
-
-        {session.pages.length > 0 && (
-          <div>
-            <p className="block text-[10px] font-semibold tracking-[0.18em] text-[color:var(--accent)] uppercase">페이지 순서</p>
-            <div className="mt-2 space-y-2">
-              {session.pages.map((pageId, index) => (
-                <div key={pageId} className="flex items-center gap-2 rounded-lg border border-[color:var(--border-soft)] bg-[color:var(--surface)] px-3 py-2.5">
-                  <span className="flex-1 text-sm font-medium text-[color:var(--foreground)]">{getPageLabel(pageId)}</span>
-                  <div className="flex gap-1">
-                    <button
-                      type="button"
-                      onClick={() => handleMovePage(index, "up")}
-                      disabled={index === 0}
-                      aria-label="위로 이동"
-                      className="flex h-7 w-7 items-center justify-center rounded text-xs text-[color:var(--accent)] hover:bg-[color:var(--accent-soft)] disabled:cursor-not-allowed disabled:opacity-30"
-                    >
-                      ▲
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleMovePage(index, "down")}
-                      disabled={index === session.pages.length - 1}
-                      aria-label="아래로 이동"
-                      className="flex h-7 w-7 items-center justify-center rounded text-xs text-[color:var(--accent)] hover:bg-[color:var(--accent-soft)] disabled:cursor-not-allowed disabled:opacity-30"
-                    >
-                      ▼
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+        <PageBlockList
+          pages={session.pages}
+          hiddenBlocks={session.hiddenBlocks}
+          projectTitles={projectTitles}
+          onToggle={handleToggleBlock}
+          onMove={handleMovePage}
+        />
       </div>
 
       {bookStatus === "success" && bookUid ? (

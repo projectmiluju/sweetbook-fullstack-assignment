@@ -6,8 +6,14 @@ import type { OrderShipping } from "@/lib/api";
 import { createBook, createOrder } from "@/lib/api";
 import type { BookTypeId } from "@/lib/book-types";
 import { BOOK_TYPE_LABELS } from "@/lib/book-types";
-import { createDefaultEditSession } from "@/lib/edit-session";
+import {
+  buildDefaultPages,
+  createDefaultEditSession,
+  movePage,
+  toggleHiddenBlock,
+} from "@/lib/edit-session";
 import type { EditSession } from "@/lib/edit-session";
+import PageBlockList from "@/components/PageBlockList";
 
 type BookCreateStatus = "idle" | "loading" | "success" | "error";
 type OrderStatus = "idle" | "loading" | "success" | "error";
@@ -33,9 +39,16 @@ interface CohortEditFormProps {
   cohortId: string;
   cohortName: string;
   cohortSummary: string;
+  cohortPhotoCount?: number;
 }
 
-export default function CohortEditForm({ bookType, cohortId, cohortName, cohortSummary }: CohortEditFormProps) {
+export default function CohortEditForm({
+  bookType,
+  cohortId,
+  cohortName,
+  cohortSummary,
+  cohortPhotoCount = 0,
+}: CohortEditFormProps) {
   const [session, setSession] = useState<EditSession>(() => ({
     ...createDefaultEditSession(bookType, cohortName),
     customText: {
@@ -43,7 +56,8 @@ export default function CohortEditForm({ bookType, cohortId, cohortName, cohortS
       graduationMessage: "",
       cohortIntro: cohortSummary,
       staffMessage: `${cohortName} 기수의 수료를 진심으로 축하합니다.`
-    }
+    },
+    pages: buildDefaultPages({ projectCount: 0, photoCount: cohortPhotoCount, bookType }),
   }));
   const [bookStatus, setBookStatus] = useState<BookCreateStatus>("idle");
   const [bookUid, setBookUid] = useState<string | null>(null);
@@ -70,6 +84,20 @@ export default function CohortEditForm({ bookType, cohortId, cohortName, cohortS
 
   function handleStaffMessageChange(value: string) {
     setSession((prev) => ({ ...prev, customText: { ...prev.customText, staffMessage: value } }));
+  }
+
+  function handleToggleBlock(blockId: string) {
+    setSession((prev) => ({
+      ...prev,
+      hiddenBlocks: toggleHiddenBlock(prev.hiddenBlocks, blockId),
+    }));
+  }
+
+  function handleMovePage(index: number, direction: "up" | "down") {
+    setSession((prev) => ({
+      ...prev,
+      pages: movePage(prev.pages, index, direction),
+    }));
   }
 
   async function handleOrder() {
@@ -128,6 +156,13 @@ export default function CohortEditForm({ bookType, cohortId, cohortName, cohortS
           <label htmlFor="staffMessage" className="block text-[10px] font-semibold tracking-[0.18em] text-[color:var(--accent)] uppercase">운영진 메시지</label>
           <textarea id="staffMessage" value={session.customText.staffMessage ?? ""} onChange={(e) => handleStaffMessageChange(e.target.value)} rows={3} className={inputClasses} />
         </div>
+
+        <PageBlockList
+          pages={session.pages}
+          hiddenBlocks={session.hiddenBlocks}
+          onToggle={handleToggleBlock}
+          onMove={handleMovePage}
+        />
       </div>
 
       {bookStatus === "success" && bookUid ? (
