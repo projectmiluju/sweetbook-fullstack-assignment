@@ -1,11 +1,12 @@
 # 프로젝트 현황
 
-**최종 업데이트:** 2026-04-08 (#84 EditForm 새 블록 타입 UI)
+**최종 업데이트:** 2026-04-08 (#85 프리뷰 선행 검증)
 **현재 버전:** v0.1.0
 **배포 URL:** 없음
 
 ## 최근 변경
 
+- **#85 책 프리뷰 선행 검증:** 3개 외부 의존성 확인. (1) 그래픽 이미지(`/api_platform_image/...`) 외부 접근 **불가** → CSS 단색 div 대체 결정. (2) Google Fonts 6종(Do Hyeon, Nanum Myeongjo, DM Serif Display 등) 모두 **가용**. (3) collageGallery는 PRD가 가정한 `flow.columns` 대신 `layout:"auto"` 블랙박스 — 사진 수별 정적 그리드 규칙으로 fallback. `/v1/templates/{uid}` 엔드포인트는 정상 동작 확인되어 #86 templates.ts 정적 저장 가능.
 - **#84 EditForm 새 블록 타입 UI:** PageBlockList 공통 컴포넌트 추출 (라벨 + 설명 + 토글 + 순서 변경 통합). EditForm의 레거시 토글 섹션 2개 + 페이지 순서 섹션을 PageBlockList 1개로 통합 (~80줄 단순화). CohortEditForm에 페이지 섹션 신규 추가. **#83 머지 후 발생한 회귀 버그 수정**: EditForm 토글이 레거시 ID(`project:N`)를 사용해 새 ID(`project-summary:N`)와 매칭 안 되던 문제 해결. getPageDescription 헬퍼 + PAGE_TYPE_DESCRIPTIONS 상수. 테스트 173개(+25), 린트/타입체크 통과.
 - **#83 프론트엔드 블록 ID 확장:** edit-session.ts에 PageBlockType 12종 + buildBlockId + getPageLabel 중앙화 + buildDefaultPages PRD 구성표 기반 리팩토링 (individual/cohort-showcase 분기). 레거시 시그니처 하위 호환 유지. EditForm.tsx 호출부 새 시그니처 전환. 테스트 148개(+17), 린트/타입체크 통과.
 - **#82 페이지 타입 매핑 구현:** payload-mapper 전면 리팩토링. PageType 12종 정의, 페이지별 다른 templateUid+parameters 생성(접근법 A: 내지b/내지a/내지_gallery 3종 템플릿). 인터페이스 확장(ProjectSummary·StudentPortfolio·Cohort에 PRD 신규 필드), DB 변환 로직 수정, 환경변수 2개 추가(CONTENT_A_TEMPLATE_UID, GALLERY_TEMPLATE_UID). QA에서 certificateMessage 빈 문자열 fallback 버그 발견·수정. 테스트 154개(+33), 빌드/타입체크 통과.
@@ -80,7 +81,7 @@
 - [x] `#84` EditForm 새 블록 타입 UI [M] → depends: #83
 
 ### Epic: 책 프리뷰 렌더러 (#85~#88)
-- [ ] `#85` 프리뷰 선행 검증 [S] — 독립 (동시 시작 가능)
+- [x] `#85` 프리뷰 선행 검증 [S] — 독립 (동시 시작 가능)
 - [ ] `#86` 템플릿 레이아웃 데이터 정적 저장 [M] → depends: #85
 - [ ] `#87` PageRenderer 컴포넌트 [L] → depends: #86
 - [ ] `#88` BookPreview + EditForm 연결 [M] → depends: #87, #82
