@@ -115,6 +115,99 @@ app.get("/api/cohorts/:id", async (request: Request, response: Response) => {
   }
 });
 
+app.post("/api/cohorts", async (request: Request, response: Response) => {
+  try {
+    const { name, program, graduationDate, summary, tagline, ...rest } = request.body as {
+      name?: string;
+      program?: string;
+      graduationDate?: string;
+      summary?: string;
+      tagline?: string;
+      operatorMessage?: string;
+      philosophy?: string;
+      logoUrl?: string;
+      photos?: string[];
+      partnerInfo?: string;
+      stats?: { demoCount?: number; projectCount?: number; participantCount?: number };
+    };
+
+    if (!name || !program || !graduationDate || !summary || !tagline) {
+      response.status(400).json({ message: "name, program, graduationDate, summary, tagline이 필요합니다." });
+      return;
+    }
+
+    const db = getPrisma();
+    const cohort = await db.cohort.create({
+      data: {
+        name,
+        program,
+        graduationDate: new Date(graduationDate),
+        summary,
+        tagline,
+        operatorMessage: rest.operatorMessage,
+        philosophy: rest.philosophy,
+        logoUrl: rest.logoUrl,
+        photos: rest.photos ?? [],
+        partnerInfo: rest.partnerInfo,
+        stats: rest.stats,
+      },
+    });
+
+    response.status(201).json({ cohort: { ...cohort, graduationDate: formatDate(cohort.graduationDate) } });
+  } catch (error) {
+    logger.error({ error }, "기수 생성에 실패했습니다.");
+    response.status(500).json({ message: "기수 생성에 실패했습니다." });
+  }
+});
+
+app.patch("/api/cohorts/:id", async (request: Request, response: Response) => {
+  try {
+    const cohortId = request.params.id as string;
+    const db = getPrisma();
+
+    const existing = await db.cohort.findUnique({ where: { id: cohortId } });
+    if (!existing) {
+      response.status(404).json({ message: "기수를 찾을 수 없습니다." });
+      return;
+    }
+
+    const body = request.body as Record<string, unknown>;
+    const data: Record<string, unknown> = {};
+    const allowedFields = ["name", "program", "summary", "tagline", "operatorMessage", "philosophy", "logoUrl", "photos", "partnerInfo", "stats"];
+    for (const field of allowedFields) {
+      if (body[field] !== undefined) data[field] = body[field];
+    }
+    if (body.graduationDate !== undefined) {
+      data.graduationDate = new Date(body.graduationDate as string);
+    }
+
+    const cohort = await db.cohort.update({ where: { id: cohortId }, data });
+    response.json({ cohort: { ...cohort, graduationDate: formatDate(cohort.graduationDate) } });
+  } catch (error) {
+    logger.error({ error }, "기수 수정에 실패했습니다.");
+    response.status(500).json({ message: "��수 수정에 실패했습니다." });
+  }
+});
+
+app.delete("/api/cohorts/:id", async (request: Request, response: Response) => {
+  try {
+    const cohortId = request.params.id as string;
+    const db = getPrisma();
+
+    const existing = await db.cohort.findUnique({ where: { id: cohortId } });
+    if (!existing) {
+      response.status(404).json({ message: "기수�� 찾을 수 없습니다." });
+      return;
+    }
+
+    await db.cohort.delete({ where: { id: cohortId } });
+    response.status(204).send();
+  } catch (error) {
+    logger.error({ error }, "기수 삭제에 실패했습니다.");
+    response.status(500).json({ message: "기수 삭제에 실패했습니다." });
+  }
+});
+
 app.get("/api/students/:id", async (request: Request, response: Response) => {
   try {
     const studentId = request.params.id as string;
@@ -165,6 +258,206 @@ app.get("/api/students/:id", async (request: Request, response: Response) => {
     response.status(500).json({ message: "수료생 상세 조회에 실패했습니다." });
   }
 });
+
+// --- Student CRUD (#78) ---
+
+app.post("/api/cohorts/:cohortId/students", async (request: Request, response: Response) => {
+  try {
+    const cohortId = request.params.cohortId as string;
+    const db = getPrisma();
+
+    const cohort = await db.cohort.findUnique({ where: { id: cohortId } });
+    if (!cohort) {
+      response.status(404).json({ message: "기수를 찾을 수 없습니다." });
+      return;
+    }
+
+    const { name, roleTrack, bio, techStack, mentorComment, photos, certificateMessage, ...rest } = request.body as {
+      name?: string;
+      roleTrack?: string;
+      bio?: string;
+      techStack?: string[];
+      mentorComment?: string;
+      photos?: string[];
+      certificateMessage?: string;
+      retrospective?: { before?: string; process?: string; turning?: string; difficulty?: string; overcome?: string; learned?: string };
+      interests?: string[];
+      achievements?: string;
+      portfolioLinks?: { github?: string; blog?: string; email?: string; demo?: string };
+      thanksMessage?: string;
+    };
+
+    if (!name || !roleTrack || !bio || !mentorComment || !certificateMessage) {
+      response.status(400).json({ message: "name, roleTrack, bio, mentorComment, certificateMessage가 필요합니다." });
+      return;
+    }
+
+    const student = await db.student.create({
+      data: {
+        cohortId,
+        name,
+        roleTrack,
+        bio,
+        techStack: techStack ?? [],
+        mentorComment,
+        photos: photos ?? [],
+        certificateMessage,
+        retrospective: rest.retrospective,
+        interests: rest.interests ?? [],
+        achievements: rest.achievements,
+        portfolioLinks: rest.portfolioLinks,
+        thanksMessage: rest.thanksMessage,
+      },
+    });
+
+    response.status(201).json({ student });
+  } catch (error) {
+    logger.error({ error }, "수료생 생성에 실패했습니다.");
+    response.status(500).json({ message: "수료생 생성에 실패했습니다." });
+  }
+});
+
+app.patch("/api/students/:id", async (request: Request, response: Response) => {
+  try {
+    const studentId = request.params.id as string;
+    const db = getPrisma();
+
+    const existing = await db.student.findUnique({ where: { id: studentId } });
+    if (!existing) {
+      response.status(404).json({ message: "수료생을 찾을 수 없습니다." });
+      return;
+    }
+
+    const body = request.body as Record<string, unknown>;
+    const data: Record<string, unknown> = {};
+    const allowedFields = ["name", "roleTrack", "bio", "techStack", "mentorComment", "photos", "certificateMessage", "retrospective", "interests", "achievements", "portfolioLinks", "thanksMessage"];
+    for (const field of allowedFields) {
+      if (body[field] !== undefined) data[field] = body[field];
+    }
+
+    const student = await db.student.update({ where: { id: studentId }, data });
+    response.json({ student });
+  } catch (error) {
+    logger.error({ error }, "수료생 수정에 실패했습니다.");
+    response.status(500).json({ message: "수료생 수정에 실패했습니다." });
+  }
+});
+
+app.delete("/api/students/:id", async (request: Request, response: Response) => {
+  try {
+    const studentId = request.params.id as string;
+    const db = getPrisma();
+
+    const existing = await db.student.findUnique({ where: { id: studentId } });
+    if (!existing) {
+      response.status(404).json({ message: "수료생을 찾을 수 없습니다." });
+      return;
+    }
+
+    await db.student.delete({ where: { id: studentId } });
+    response.status(204).send();
+  } catch (error) {
+    logger.error({ error }, "수료생 삭제에 실패했습니다.");
+    response.status(500).json({ message: "수료생 삭제에 실패했습니다." });
+  }
+});
+
+// --- Project CRUD (#79) ---
+
+app.post("/api/students/:studentId/projects", async (request: Request, response: Response) => {
+  try {
+    const studentId = request.params.studentId as string;
+    const db = getPrisma();
+
+    const student = await db.student.findUnique({ where: { id: studentId } });
+    if (!student) {
+      response.status(404).json({ message: "수료생을 찾을 수 없습니다." });
+      return;
+    }
+
+    const { title, summary, contribution, links, problem, solution, techChoices, result } = request.body as {
+      title?: string;
+      summary?: string;
+      contribution?: string;
+      links?: string[];
+      problem?: string;
+      solution?: string;
+      techChoices?: string[];
+      result?: string;
+    };
+
+    if (!title || !summary || !contribution) {
+      response.status(400).json({ message: "title, summary, contribution이 필요합니다." });
+      return;
+    }
+
+    const project = await db.project.create({
+      data: {
+        studentId,
+        title,
+        summary,
+        contribution,
+        links: links ?? [],
+        problem,
+        solution,
+        techChoices: techChoices ?? [],
+        result,
+      },
+    });
+
+    response.status(201).json({ project });
+  } catch (error) {
+    logger.error({ error }, "프로젝트 생성에 실패했습니다.");
+    response.status(500).json({ message: "프로젝트 생성에 실패했습니다." });
+  }
+});
+
+app.patch("/api/projects/:id", async (request: Request, response: Response) => {
+  try {
+    const projectId = request.params.id as string;
+    const db = getPrisma();
+
+    const existing = await db.project.findUnique({ where: { id: projectId } });
+    if (!existing) {
+      response.status(404).json({ message: "프로젝트를 찾을 수 없습니다." });
+      return;
+    }
+
+    const body = request.body as Record<string, unknown>;
+    const data: Record<string, unknown> = {};
+    const allowedFields = ["title", "summary", "contribution", "links", "problem", "solution", "techChoices", "result"];
+    for (const field of allowedFields) {
+      if (body[field] !== undefined) data[field] = body[field];
+    }
+
+    const project = await db.project.update({ where: { id: projectId }, data });
+    response.json({ project });
+  } catch (error) {
+    logger.error({ error }, "프로젝트 수정에 실패했습니다.");
+    response.status(500).json({ message: "프로젝트 수정에 실패했습니다." });
+  }
+});
+
+app.delete("/api/projects/:id", async (request: Request, response: Response) => {
+  try {
+    const projectId = request.params.id as string;
+    const db = getPrisma();
+
+    const existing = await db.project.findUnique({ where: { id: projectId } });
+    if (!existing) {
+      response.status(404).json({ message: "프로젝트를 찾을 수 없습니다." });
+      return;
+    }
+
+    await db.project.delete({ where: { id: projectId } });
+    response.status(204).send();
+  } catch (error) {
+    logger.error({ error }, "프로젝트 삭제에 실패했습니다.");
+    response.status(500).json({ message: "프로젝트 삭제에 실패했습니다." });
+  }
+});
+
+// --- Books / Orders ---
 
 app.post("/api/books", async (request: Request, response: Response) => {
   const idempotencyKey = request.headers["idempotency-key"];
