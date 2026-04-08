@@ -1,11 +1,12 @@
 # 프로젝트 현황
 
-**최종 업데이트:** 2026-04-08 (DB 도입 Epic 완료)
+**최종 업데이트:** 2026-04-08 (#82 페이지 타입 매핑 구현)
 **현재 버전:** v0.1.0
 **배포 URL:** 없음
 
 ## 최근 변경
 
+- **#82 페이지 타입 매핑 구현:** payload-mapper 전면 리팩토링. PageType 12종 정의, 페이지별 다른 templateUid+parameters 생성(접근법 A: 내지b/내지a/내지_gallery 3종 템플릿). 인터페이스 확장(ProjectSummary·StudentPortfolio·Cohort에 PRD 신규 필드), DB 변환 로직 수정, 환경변수 2개 추가(CONTENT_A_TEMPLATE_UID, GALLERY_TEMPLATE_UID). QA에서 certificateMessage 빈 문자열 fallback 버그 발견·수정. 테스트 154개(+33), 빌드/타입체크 통과.
 - **DB 도입 Epic 완료 (#74~#80):** PostgreSQL 16 + Prisma ORM 도입, Docker Compose DB 서비스 추가, seed 스크립트(2기수/3수료생/5프로젝트 + 신규 필드 더미), GET 3개 엔드포인트 DB 전환, Cohort/Student/Project CRUD 9개 엔드포인트 추가, orchestrate-book DB 연동. ADR-007 작성. README 갱신(DATABASE_URL, prisma 폴더, DB 실행 절차, 기술 스택).
 - **PRD 3개 승인 + 이슈 15개 생성:** 내지 콘텐츠 매핑 개선(`content-page-mapping-improvement.md`), PostgreSQL+Prisma DB 도입(`database-prisma-migration.md`), 책 프리뷰 렌더러(`book-preview-renderer.md`). #74~#88 이슈 생성, #68 업데이트. ADR-007(DB), ADR-008(프리뷰) 작성.
 - **SweetBook API 템플릿 조사 완료:** A4 SC 판형 24개 템플릿의 파라미터 확인. 내지a(텍스트+사진), 내지_gallery(콜라주), 내지b(텍스트) 3종을 페이지 타입별로 사용하는 전략 확정. 프리뷰·PDF 엔드포인트 미지원 확인 → 자체 렌더러 결정.
@@ -44,7 +45,7 @@
 
 | 이슈 | 심각도 | 상태 |
 |------|-------|------|
-| 내지 모든 페이지에 동일 파라미터(이름만) 반복 — 실제 콘텐츠 미반영 | 높음 | 진행 예정 (#82) |
+| ~~내지 모든 페이지에 동일 파라미터(이름만) 반복 — 실제 콘텐츠 미반영~~ | ~~높음~~ | 해결 (#82) |
 | SweetBook API 프리뷰/PDF 미지원 — 책 결과물 확인 불가 | 높음 | 진행 예정 (#85~#88) |
 | DB 없음 — CRUD 불가, 시연 시 데이터 조작 불가 | 높음 | 진행 예정 (#74~#80) |
 | server.ts 라우트 핸들러 테스트 0개 | 중간 | #76 구현 시 해결 |
@@ -54,7 +55,7 @@
 
 | 항목 | 등록일 | 예상 작업량 |
 |------|-------|-----------|
-| payload-mapper가 블록 ID를 무시하고 동일 파라미터 복사 | 2026-04-08 | L (#82) |
+| ~~payload-mapper가 블록 ID를 무시하고 동일 파라미터 복사~~ | 2026-04-08 | ~~L~~ 완료 (#82) |
 | ~~정적 JSON 데이터 → PostgreSQL 전환 필요~~ | 2026-04-08 | ~~M~~ 완료 (#74~#76) |
 | ~~PRD 24페이지 구성표에 필요한 데이터 필드 누락~~ | 2026-04-08 | ~~M~~ 완료 (#75 seed) |
 | pnpm 기준 README 실행 절차를 실제 dev 서버 구동 기준으로 검증 | 2026-04-04 | S |
@@ -72,7 +73,7 @@
 
 ### Epic: 내지 콘텐츠 매핑 (#81~#84)
 - [ ] `#81` SweetBook sandbox 선행 검증 [M] — 독립 (동시 시작 가능)
-- [ ] `#82` payload-mapper 페이지별 매핑 [L] → depends: #76, #81
+- [x] `#82` payload-mapper 페이지별 매핑 [L] → depends: #76, #81
 - [ ] `#83` 프론트엔드 블록 ID 확장 [M] → depends: #82
 - [ ] `#84` EditForm 새 블록 타입 UI [M] → depends: #83
 
