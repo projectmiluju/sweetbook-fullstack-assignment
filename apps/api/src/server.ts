@@ -9,6 +9,12 @@ import { getEnv, loadEnv } from "./config/env.js";
 import { getPrisma } from "./lib/prisma.js";
 import { orchestrateBook, OrchestrationError } from "./lib/orchestrate-book.js";
 import type { OrchestrationInput } from "./lib/orchestrate-book.js";
+import {
+  buildContentsPayload,
+  buildCoverPayload,
+} from "./lib/payload-mapper.js";
+import type { EditSessionInput } from "./lib/payload-mapper.js";
+import type { Cohort, StudentPortfolio } from "./data/cohorts.js";
 import { createSweetBookClient } from "./lib/sweetbook-api.js";
 import type { OrderShipping } from "./lib/sweetbook-api.js";
 
@@ -20,6 +26,81 @@ const port = env.PORT;
 
 function formatDate(date: Date): string {
   return date.toISOString().slice(0, 10);
+}
+
+/**
+ * DB에서 cohort + students + projects를 조회하여 Cohort 형태로 변환한다.
+ * /api/books와 /api/preview-payload에서 공통으로 사용.
+ */
+async function loadCohortFromDb(cohortId: string): Promise<Cohort | null> {
+  const db = getPrisma();
+  const cohortRow = await db.cohort.findUnique({ where: { id: cohortId } });
+  if (!cohortRow) return null;
+
+  const studentRows = await db.student.findMany({
+    where: { cohortId },
+    orderBy: { createdAt: "asc" },
+  });
+
+  const studentsWithProjects: StudentPortfolio[] = await Promise.all(
+    studentRows.map(async (s: {
+      id: string; name: string; roleTrack: string; bio: string;
+      techStack: string[]; mentorComment: string; photos: string[];
+      certificateMessage: string; retrospective: unknown;
+      interests: string[]; achievements: string | null;
+      portfolioLinks: unknown; thanksMessage: string | null;
+    }) => {
+      const projects = await db.project.findMany({
+        where: { studentId: s.id },
+        orderBy: { createdAt: "asc" },
+      });
+      return {
+        id: s.id,
+        name: s.name,
+        roleTrack: s.roleTrack,
+        bio: s.bio,
+        techStack: s.techStack,
+        projects: projects.map((p: {
+          title: string; summary: string; contribution: string; links: string[];
+          problem: string | null; solution: string | null; techChoices: string[]; result: string | null;
+        }) => ({
+          title: p.title,
+          summary: p.summary,
+          contribution: p.contribution,
+          links: p.links,
+          ...(p.problem && { problem: p.problem }),
+          ...(p.solution && { solution: p.solution }),
+          ...(p.techChoices.length > 0 && { techChoices: p.techChoices }),
+          ...(p.result && { result: p.result }),
+        })),
+        retrospective: typeof s.retrospective === "object" && s.retrospective !== null
+          ? s.retrospective as Record<string, string>
+          : (s.retrospective as string) ?? "",
+        mentorComment: s.mentorComment,
+        photos: s.photos,
+        certificateMessage: s.certificateMessage,
+        ...(s.interests.length > 0 && { interests: s.interests }),
+        ...(s.achievements && { achievements: s.achievements }),
+        ...(s.portfolioLinks != null && typeof s.portfolioLinks === "object"
+          ? { portfolioLinks: s.portfolioLinks as Record<string, string> }
+          : {}),
+        ...(s.thanksMessage && { thanksMessage: s.thanksMessage }),
+      };
+    })
+  );
+
+  return {
+    id: cohortRow.id,
+    name: cohortRow.name,
+    program: cohortRow.program,
+    graduationDate: formatDate(cohortRow.graduationDate),
+    summary: cohortRow.summary,
+    tagline: cohortRow.tagline,
+    students: studentsWithProjects,
+    ...(cohortRow.operatorMessage && { operatorMessage: cohortRow.operatorMessage }),
+    ...(cohortRow.philosophy && { philosophy: cohortRow.philosophy }),
+    ...(cohortRow.photos.length > 0 && { photos: cohortRow.photos }),
+  };
 }
 
 // 진행 중인 책 생성 요청을 추적 (중복 요청 차단)
@@ -228,6 +309,7 @@ app.get("/api/students/:id", async (request: Request, response: Response) => {
     response.json({
       student: {
         id: student.id,
+        cohortId: student.cohortId,
         name: student.name,
         roleTrack: student.roleTrack,
         bio: student.bio,
@@ -457,7 +539,51 @@ app.delete("/api/projects/:id", async (request: Request, response: Response) => 
   }
 });
 
-// --- Books / Orders ---
+// --- Books / Orders / Preview ---
+
+/**
+ * 책 프리뷰 페이로드 생성 (#88).
+ *
+ * payload-mapper의 buildCoverPayload + buildContentsPayload 결과를
+ * 그대로 JSON으로 반환한다. 프론트엔드 BookPreview가 이 데이터를
+ * PageRenderer로 렌더링한다.
+ *
+ * 부수효과 없는 조회이므로 Idempotency-Key 불필요.
+ */
+app.post("/api/preview-payload", async (request: Request, response: Response) => {
+  const { session, cohortId, studentId } = request.body as {
+    session?: EditSessionInput;
+    cohortId?: string;
+    studentId?: string;
+  };
+
+  if (!session || !cohortId) {
+    response.status(400).json({ message: "session과 cohortId가 필요합니다." });
+    return;
+  }
+
+  const cohort = await loadCohortFromDb(cohortId);
+  if (!cohort) {
+    response.status(404).json({ message: "기수를 찾을 수 없습니다." });
+    return;
+  }
+
+  const student: StudentPortfolio | undefined = studentId
+    ? cohort.students.find((s) => s.id === studentId)
+    : undefined;
+
+  try {
+    const cover = buildCoverPayload(session, cohort, student);
+    const contents = buildContentsPayload(session, cohort, student);
+    response.json({ cover, contents });
+  } catch (error) {
+    logger.error(
+      { err: error instanceof Error ? error.message : String(error) },
+      "preview-payload 생성 실패"
+    );
+    response.status(500).json({ message: "프리뷰 페이로드 생성에 실패했습니다." });
+  }
+});
 
 app.post("/api/books", async (request: Request, response: Response) => {
   const idempotencyKey = request.headers["idempotency-key"];
@@ -484,68 +610,13 @@ app.post("/api/books", async (request: Request, response: Response) => {
 
   const { SWEETBOOK_API_BASE_URL, SWEETBOOK_API_KEY } = getEnv();
   const client = createSweetBookClient(SWEETBOOK_API_BASE_URL, SWEETBOOK_API_KEY);
-  const db = getPrisma();
 
-  // DB에서 cohort + students + projects 조회하여 Cohort[] 형태로 변환
-  const cohortRow = await db.cohort.findUnique({ where: { id: cohortId } });
-  if (!cohortRow) {
+  const cohort = await loadCohortFromDb(cohortId);
+  if (!cohort) {
     response.status(404).json({ message: "기수를 찾을 수 없습니다." });
     return;
   }
-  const studentRows = await db.student.findMany({ where: { cohortId }, orderBy: { createdAt: "asc" } });
-  const studentsWithProjects = await Promise.all(
-    studentRows.map(async (s: {
-      id: string; name: string; roleTrack: string; bio: string;
-      techStack: string[]; mentorComment: string; photos: string[];
-      certificateMessage: string; retrospective: unknown;
-      interests: string[]; achievements: string | null;
-      portfolioLinks: unknown; thanksMessage: string | null;
-    }) => {
-      const projects = await db.project.findMany({ where: { studentId: s.id }, orderBy: { createdAt: "asc" } });
-      return {
-        id: s.id,
-        name: s.name,
-        roleTrack: s.roleTrack,
-        bio: s.bio,
-        techStack: s.techStack,
-        projects: projects.map((p: {
-          title: string; summary: string; contribution: string; links: string[];
-          problem: string | null; solution: string | null; techChoices: string[]; result: string | null;
-        }) => ({
-          title: p.title,
-          summary: p.summary,
-          contribution: p.contribution,
-          links: p.links,
-          ...(p.problem && { problem: p.problem }),
-          ...(p.solution && { solution: p.solution }),
-          ...(p.techChoices.length > 0 && { techChoices: p.techChoices }),
-          ...(p.result && { result: p.result }),
-        })),
-        retrospective: typeof s.retrospective === "object" && s.retrospective !== null
-          ? s.retrospective as Record<string, string>
-          : (s.retrospective as string) ?? "",
-        mentorComment: s.mentorComment,
-        photos: s.photos,
-        certificateMessage: s.certificateMessage,
-        ...(s.interests.length > 0 && { interests: s.interests }),
-        ...(s.achievements && { achievements: s.achievements }),
-        ...(s.portfolioLinks != null && typeof s.portfolioLinks === "object" ? { portfolioLinks: s.portfolioLinks as Record<string, string> } : {}),
-        ...(s.thanksMessage && { thanksMessage: s.thanksMessage }),
-      };
-    })
-  );
-  const cohortsData = [{
-    id: cohortRow.id,
-    name: cohortRow.name,
-    program: cohortRow.program,
-    graduationDate: formatDate(cohortRow.graduationDate),
-    summary: cohortRow.summary,
-    tagline: cohortRow.tagline,
-    students: studentsWithProjects,
-    ...(cohortRow.operatorMessage && { operatorMessage: cohortRow.operatorMessage }),
-    ...(cohortRow.philosophy && { philosophy: cohortRow.philosophy }),
-    ...(cohortRow.photos.length > 0 && { photos: cohortRow.photos }),
-  }];
+  const cohortsData = [cohort];
 
   inProgressKeys.add(idempotencyKey);
   try {

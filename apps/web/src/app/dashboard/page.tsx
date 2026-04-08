@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { EmptyState } from "@/components/EmptyState";
+import CohortAdminPanel from "@/components/admin/CohortAdminPanel";
 import { getCohorts } from "@/lib/api";
 
 export const dynamic = "force-dynamic";
@@ -90,6 +91,10 @@ export default async function DashboardPage() {
             </div>
           </Link>
         ))}
+      </section>
+
+      <section className="mt-14">
+        <CohortAdminPanel cohorts={cohorts} />
       </section>
     </main>
   );

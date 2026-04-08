@@ -25,20 +25,31 @@ export interface CohortDetail extends CohortSummary {
 }
 
 export interface ProjectSummary {
+  id?: string;
   title: string;
   summary: string;
   contribution: string;
   links: string[];
 }
 
+export interface RetrospectiveData {
+  before?: string;
+  process?: string;
+  turning?: string;
+  difficulty?: string;
+  overcome?: string;
+  learned?: string;
+}
+
 export interface StudentPortfolio {
   id: string;
+  cohortId?: string;
   name: string;
   roleTrack: string;
   bio: string;
   techStack: string[];
   projects: ProjectSummary[];
-  retrospective: string;
+  retrospective: string | RetrospectiveData;
   mentorComment: string;
   photos: string[];
   certificateMessage: string;
@@ -112,6 +123,37 @@ export interface OrderResult {
   status: string;
 }
 
+export interface PreviewPagePayload {
+  templateUid: string;
+  parameters: Record<string, string>;
+}
+
+export interface PreviewPayloadResult {
+  cover: PreviewPagePayload;
+  contents: PreviewPagePayload[];
+}
+
+export async function getPreviewPayload(params: {
+  session: EditSession;
+  cohortId: string;
+  studentId?: string;
+}): Promise<PreviewPayloadResult> {
+  const { session, cohortId, studentId } = params;
+
+  const response = await fetch(`${getApiBaseUrl()}/api/preview-payload`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ session, cohortId, studentId }),
+  });
+
+  if (!response.ok) {
+    const body = (await response.json().catch(() => ({}))) as { message?: string };
+    throw new Error(body.message ?? "프리뷰 페이로드를 불러오지 못했습니다.");
+  }
+
+  return (await response.json()) as PreviewPayloadResult;
+}
+
 export async function createBook(params: {
   session: EditSession;
   cohortId: string;
@@ -167,6 +209,153 @@ export async function createOrder(params: {
   }
 
   return (await response.json()) as OrderResult;
+}
+
+// ────────────────────────────────────────────────
+// Cohort CRUD (#77)
+// ────────────────────────────────────────────────
+
+export interface CohortInput {
+  name: string;
+  program: string;
+  graduationDate: string; // YYYY-MM-DD
+  summary: string;
+  tagline: string;
+}
+
+async function postJson<T>(path: string, body: unknown): Promise<T> {
+  const response = await fetch(`${getApiBaseUrl()}${path}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  if (!response.ok) {
+    const data = (await response.json().catch(() => ({}))) as { message?: string };
+    throw new Error(data.message ?? "요청에 실패했습니다.");
+  }
+  return (await response.json()) as T;
+}
+
+async function patchJson<T>(path: string, body: unknown): Promise<T> {
+  const response = await fetch(`${getApiBaseUrl()}${path}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  if (!response.ok) {
+    const data = (await response.json().catch(() => ({}))) as { message?: string };
+    throw new Error(data.message ?? "요청에 실패했습니다.");
+  }
+  return (await response.json()) as T;
+}
+
+async function deleteRequest(path: string): Promise<void> {
+  const response = await fetch(`${getApiBaseUrl()}${path}`, { method: "DELETE" });
+  if (!response.ok && response.status !== 204) {
+    const data = (await response.json().catch(() => ({}))) as { message?: string };
+    throw new Error(data.message ?? "삭제에 실패했습니다.");
+  }
+}
+
+export async function createCohort(input: CohortInput): Promise<CohortDetail> {
+  const data = await postJson<{ cohort: CohortDetail }>("/api/cohorts", input);
+  return data.cohort;
+}
+
+export async function updateCohort(
+  cohortId: string,
+  input: Partial<CohortInput>
+): Promise<CohortDetail> {
+  const data = await patchJson<{ cohort: CohortDetail }>(
+    `/api/cohorts/${cohortId}`,
+    input
+  );
+  return data.cohort;
+}
+
+export async function deleteCohort(cohortId: string): Promise<void> {
+  await deleteRequest(`/api/cohorts/${cohortId}`);
+}
+
+// ────────────────────────────────────────────────
+// Student CRUD (#78)
+// ────────────────────────────────────────────────
+
+export interface StudentInput {
+  name: string;
+  roleTrack: string;
+  bio: string;
+  techStack: string[];
+  mentorComment: string;
+  photos: string[];
+  certificateMessage: string;
+}
+
+export async function createStudent(
+  cohortId: string,
+  input: StudentInput
+): Promise<StudentPortfolio> {
+  const data = await postJson<{ student: StudentPortfolio }>(
+    `/api/cohorts/${cohortId}/students`,
+    input
+  );
+  return data.student;
+}
+
+export async function updateStudent(
+  studentId: string,
+  input: Partial<StudentInput>
+): Promise<StudentPortfolio> {
+  const data = await patchJson<{ student: StudentPortfolio }>(
+    `/api/students/${studentId}`,
+    input
+  );
+  return data.student;
+}
+
+export async function deleteStudent(studentId: string): Promise<void> {
+  await deleteRequest(`/api/students/${studentId}`);
+}
+
+// ────────────────────────────────────────────────
+// Project CRUD (#79)
+// ────────────────────────────────────────────────
+
+export interface ProjectInput {
+  title: string;
+  summary: string;
+  contribution: string;
+  links: string[];
+}
+
+export interface ProjectRecord extends ProjectSummary {
+  id: string;
+}
+
+export async function createProject(
+  studentId: string,
+  input: ProjectInput
+): Promise<ProjectRecord> {
+  const data = await postJson<{ project: ProjectRecord }>(
+    `/api/students/${studentId}/projects`,
+    input
+  );
+  return data.project;
+}
+
+export async function updateProject(
+  projectId: string,
+  input: Partial<ProjectInput>
+): Promise<ProjectRecord> {
+  const data = await patchJson<{ project: ProjectRecord }>(
+    `/api/projects/${projectId}`,
+    input
+  );
+  return data.project;
+}
+
+export async function deleteProject(projectId: string): Promise<void> {
+  await deleteRequest(`/api/projects/${projectId}`);
 }
 
 export async function getStudent(studentId: string) {

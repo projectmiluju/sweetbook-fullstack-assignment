@@ -10,10 +10,12 @@
 
 ## 주요 기능
 
+- **CRUD 관리** — 기수·수료생·프로젝트를 운영자 화면에서 직접 추가/수정/삭제 (#77~#79)
 - 기수 목록 및 수료생 목록 조회
 - 수료생 상세 포트폴리오 확인
 - **개인 포트폴리오 북** 또는 **기수 쇼케이스 북** 선택
-- 편집 폼 — 표지 제목, 기념 수료 문구, 콘텐츠 블록 포함/제외, 페이지 순서 변경
+- 편집 폼 — 표지 제목, 기념 수료 문구, 12종 페이지 타입별 포함/제외, 페이지 순서 변경 (#82~#84)
+- **책 프리뷰** — SweetBook 템플릿 좌표를 HTML/CSS로 렌더링하여 책을 만들기 전에 페이지별로 미리 확인 (#85~#88)
 - 편집 완료 후 SweetBook API를 통한 책 생성 (4단계: 초안 → 표지 → 내지 → 최종화)
 - 책 생성 성공 후 배송 정보 입력 및 주문 생성
 - 주문 성공/실패 결과 표시
@@ -100,6 +102,9 @@ pnpm dev:web
 │   └── web        # Next.js + TypeScript 프론트엔드
 │       └── src
 │           ├── app/           # Next.js App Router 페이지
+│           ├── components/
+│           │   ├── admin/     # CRUD 폼/모달/패널 (#77~#79 UI)
+│           │   └── preview/   # PageRenderer + 5종 element + BookPreview (#85~#88)
 │           └── lib/           # api.ts, edit-session.ts, book-types.ts
 ├── docs
 │   ├── decisions  # ADR 문서
