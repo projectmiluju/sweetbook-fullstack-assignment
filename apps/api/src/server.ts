@@ -494,7 +494,13 @@ app.post("/api/books", async (request: Request, response: Response) => {
   }
   const studentRows = await db.student.findMany({ where: { cohortId }, orderBy: { createdAt: "asc" } });
   const studentsWithProjects = await Promise.all(
-    studentRows.map(async (s: { id: string; name: string; roleTrack: string; bio: string; techStack: string[]; mentorComment: string; photos: string[]; certificateMessage: string; retrospective: unknown }) => {
+    studentRows.map(async (s: {
+      id: string; name: string; roleTrack: string; bio: string;
+      techStack: string[]; mentorComment: string; photos: string[];
+      certificateMessage: string; retrospective: unknown;
+      interests: string[]; achievements: string | null;
+      portfolioLinks: unknown; thanksMessage: string | null;
+    }) => {
       const projects = await db.project.findMany({ where: { studentId: s.id }, orderBy: { createdAt: "asc" } });
       return {
         id: s.id,
@@ -502,18 +508,29 @@ app.post("/api/books", async (request: Request, response: Response) => {
         roleTrack: s.roleTrack,
         bio: s.bio,
         techStack: s.techStack,
-        projects: projects.map((p: { title: string; summary: string; contribution: string; links: string[] }) => ({
+        projects: projects.map((p: {
+          title: string; summary: string; contribution: string; links: string[];
+          problem: string | null; solution: string | null; techChoices: string[]; result: string | null;
+        }) => ({
           title: p.title,
           summary: p.summary,
           contribution: p.contribution,
           links: p.links,
+          ...(p.problem && { problem: p.problem }),
+          ...(p.solution && { solution: p.solution }),
+          ...(p.techChoices.length > 0 && { techChoices: p.techChoices }),
+          ...(p.result && { result: p.result }),
         })),
         retrospective: typeof s.retrospective === "object" && s.retrospective !== null
-          ? (s.retrospective as { difficulty?: string }).difficulty ?? ""
-          : "",
+          ? s.retrospective as Record<string, string>
+          : (s.retrospective as string) ?? "",
         mentorComment: s.mentorComment,
         photos: s.photos,
         certificateMessage: s.certificateMessage,
+        ...(s.interests.length > 0 && { interests: s.interests }),
+        ...(s.achievements && { achievements: s.achievements }),
+        ...(s.portfolioLinks != null && typeof s.portfolioLinks === "object" ? { portfolioLinks: s.portfolioLinks as Record<string, string> } : {}),
+        ...(s.thanksMessage && { thanksMessage: s.thanksMessage }),
       };
     })
   );
@@ -525,6 +542,9 @@ app.post("/api/books", async (request: Request, response: Response) => {
     summary: cohortRow.summary,
     tagline: cohortRow.tagline,
     students: studentsWithProjects,
+    ...(cohortRow.operatorMessage && { operatorMessage: cohortRow.operatorMessage }),
+    ...(cohortRow.philosophy && { philosophy: cohortRow.philosophy }),
+    ...(cohortRow.photos.length > 0 && { photos: cohortRow.photos }),
   }];
 
   inProgressKeys.add(idempotencyKey);

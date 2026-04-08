@@ -9,6 +9,8 @@ const VALID_ENV = {
   CONTENTS_TEMPLATE_UID: "contents-uid",
   BLANK_TEMPLATE_UID: "blank-uid",
   CONTENT_TEMPLATE_UID: "content-uid",
+  CONTENT_A_TEMPLATE_UID: "content-a-uid",
+  GALLERY_TEMPLATE_UID: "gallery-uid",
 };
 
 describe("env 검증", () => {

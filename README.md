@@ -50,7 +50,9 @@ cp .env.example .env
 | `BOOK_SPEC_UID` | Books API 오케스트레이션에 사용할 판형 UID (Sandbox 기준: `PHOTOBOOK_A4_SC`) |
 | `COVER_TEMPLATE_UID` | 표지 templateUid (Sandbox 기준: `3S1ceGaglj5i` — 구글포토북A) |
 | `CONTENTS_TEMPLATE_UID` | 내지 contents templateUid |
-| `CONTENT_TEMPLATE_UID` | 내지 templateUid (Sandbox 기준: `3mjKd8kcaVzT` — 내지b) |
+| `CONTENT_TEMPLATE_UID` | 내지b templateUid — 텍스트 전용 (Sandbox 기준: `3mjKd8kcaVzT`) |
+| `CONTENT_A_TEMPLATE_UID` | 내지a templateUid — 텍스트+사진 (Sandbox 기준: `3nWJ4wtPSQOb`) |
+| `GALLERY_TEMPLATE_UID` | 내지_gallery templateUid — 콜라주 갤러리 (Sandbox 기준: `msFsr6Ult7qw`) |
 | `BLANK_TEMPLATE_UID` | 예비 빈 내지 templateUid (Sandbox 기준: `2lpHl6oLAYss`) |
 
 ### 데이터베이스 실행
