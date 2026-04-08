@@ -1,0 +1,74 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Cohort {
+  id             String   @id @default(cuid())
+  name           String
+  program        String
+  graduationDate DateTime
+  summary        String
+  tagline        String
+
+  // PRD 페이지 구성표 추가 필드
+  operatorMessage String?
+  philosophy      String?
+  logoUrl         String?
+  photos          String[]
+  partnerInfo     String?
+  stats           Json?
+
+  students  Student[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model Student {
+  id                 String   @id @default(cuid())
+  name               String
+  roleTrack          String
+  bio                String
+  techStack          String[]
+  mentorComment      String
+  photos             String[]
+  certificateMessage String
+
+  // PRD 페이지 구성표 추가/변경 필드
+  retrospective  Json?
+  interests      String[]
+  achievements   String?
+  portfolioLinks Json?
+  thanksMessage  String?
+
+  cohortId String
+  cohort   Cohort    @relation(fields: [cohortId], references: [id], onDelete: Cascade)
+  projects Project[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Project {
+  id           String   @id @default(cuid())
+  title        String
+  summary      String
+  contribution String
+  links        String[]
+
+  // PRD 프로젝트 상세 페이지 추가 필드
+  problem     String?
+  solution    String?
+  techChoices String[]
+  result      String?
+
+  studentId String
+  student   Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
