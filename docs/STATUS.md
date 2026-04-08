@@ -1,11 +1,13 @@
 # 프로젝트 현황
 
-**최종 업데이트:** 2026-04-08 (#87 PageRenderer + 5종 element 컴포넌트)
+**최종 업데이트:** 2026-04-09 (최종 제출 직전 — #88 BookPreview + CRUD UI + 회귀 fix 3건)
 **현재 버전:** v0.1.0
-**배포 URL:** 없음
+**배포 URL:** 없음 (로컬 실행 전용 — #68 프로덕션 배포는 미진행, 별도 후속 작업)
 
 ## 최근 변경
 
+- **CRUD 관리 UI (즉흥 epic, PRD 없음):** #77~#79가 만든 9개 CRUD API에 대응하는 운영자 UI를 추가. `apps/web/src/components/admin/`에 Modal, ConfirmDeleteDialog, form-fields, 3종 FormDialog(Cohort/Student/Project), 4종 AdminPanel 신규. api.ts에 9개 CRUD 함수 + postJson/patchJson/deleteRequest 헬퍼. dashboard·기수 상세·수료생 상세 페이지에 패널 배치, mutation 후 router.refresh()로 자동 갱신. 스코프 작게 유지 — 신규 Json 필드(retrospective, portfolioLinks 등)는 v2. QA에서 form-fields/api-crud/ConfirmDeleteDialog/CohortFormDialog 44개 테스트 추가. 회귀 0건. (devlog: 2026-04-09-crud-admin-ui.md)
+- **#88 BookPreview + EditForm 연결:** payload-mapper 로직 재사용 결정 — **옵션 B (POST /api/preview-payload 신규 엔드포인트)**. 백엔드는 buildCoverPayload+buildContentsPayload 결과를 JSON wrap, 프론트는 모달 열 때 1회 fetch. server.ts에 loadCohortFromDb() 헬퍼 추출하여 /api/books와 공유. BookPreview.tsx + template-resolver.ts 신규, ESC/←/→ 키 지원. EditForm/CohortEditForm에 "프리뷰 보기" 버튼. **회귀 fix 3건 함께 처리**: (1) retrospective Json 객체 React child 에러 (#82 머지 후 student 상세 페이지 깨진 채로 방치), (2) 502 collagePhotos 이중 인코딩 (payload-mapper가 string화 + sweetbook-api가 또 stringify → SweetBook이 0장 인식, sweetbook-api에서 JSON 문자열 parse hack), (3) GET /api/students/:id 응답에 cohortId 필드 추가. 테스트 322개. (devlog: 2026-04-09-issue-88-book-preview.md)
 - **#87 PageRenderer + 5종 element 컴포넌트:** `apps/web/src/components/preview/`에 PageRenderer.tsx + elements/ 5종(Text/Photo/Graphic/Rectangle/Collage) + utils/ 3종(color ARGB→rgba, font 매핑, scale). globals.css에 6종 Google Fonts 단일 import 추가. GraphicElement는 #85 결정대로 imageSource 무시하고 단색 div fallback. CollageElement는 사진 수별 정적 grid 규칙. QA에서 색상 변환 DOM 반영 + GraphicElement img 태그 회귀 방지 + PageRenderer 비정상 입력 방어 테스트 추가. 테스트 305개(+77).
 - **#86 프리뷰 템플릿 데이터 정적 저장:** `apps/web/src/components/preview/` 신규 디렉토리. types.ts(5종 element discriminated union), constants.ts(PAGE_WIDTH/HEIGHT, GRAPHIC_FALLBACK_COLOR), templates.ts(4개 템플릿 정적 저장 — cover/contentB/contentA/gallery), param-substitute.ts(`$$key$$` 치환 유틸). QA에서 templates.ts ↔ payload-mapper 파라미터 8종 정합성 테스트 추가 — #87 구현 시 가정 일치 보장. 테스트 228개(+37).
 - **#85 책 프리뷰 선행 검증:** 3개 외부 의존성 확인. (1) 그래픽 이미지(`/api_platform_image/...`) 외부 접근 **불가** → CSS 단색 div 대체 결정. (2) Google Fonts 6종(Do Hyeon, Nanum Myeongjo, DM Serif Display 등) 모두 **가용**. (3) collageGallery는 PRD가 가정한 `flow.columns` 대신 `layout:"auto"` 블랙박스 — 사진 수별 정적 그리드 규칙으로 fallback. `/v1/templates/{uid}` 엔드포인트는 정상 동작 확인되어 #86 templates.ts 정적 저장 가능.
@@ -51,10 +53,11 @@
 | 이슈 | 심각도 | 상태 |
 |------|-------|------|
 | ~~내지 모든 페이지에 동일 파라미터(이름만) 반복 — 실제 콘텐츠 미반영~~ | ~~높음~~ | 해결 (#82) |
-| SweetBook API 프리뷰/PDF 미지원 — 책 결과물 확인 불가 | 높음 | 진행 예정 (#85~#88) |
-| DB 없음 — CRUD 불가, 시연 시 데이터 조작 불가 | 높음 | 진행 예정 (#74~#80) |
-| server.ts 라우트 핸들러 테스트 0개 | 중간 | #76 구현 시 해결 |
-| `jsdom@29` + Vitest 최신 버전 ESM 호환 이슈로 컴포넌트 테스트 환경 미구성 | 낮음 | 완료 (happy-dom 도입) |
+| ~~SweetBook API 프리뷰/PDF 미지원 — 책 결과물 확인 불가~~ | ~~높음~~ | 해결 (#85~#88, 자체 HTML 렌더러) |
+| ~~DB 없음 — CRUD 불가, 시연 시 데이터 조작 불가~~ | ~~높음~~ | 해결 (#74~#80 + CRUD UI epic) |
+| server.ts 라우트 핸들러 통합 테스트 0개 | 중간 | 별도 이슈 — supertest 인프라 구축 필요 |
+| collagePhotos 이중 인코딩 hack (sweetbook-api.ts) | 낮음 | 임시 fix — 정식 fix는 ContentPagePayload.parameters 타입을 `Record<string, string \| string[]>`로 확장 |
+| ~~`jsdom@29` + Vitest 최신 버전 ESM 호환 이슈로 컴포넌트 테스트 환경 미구성~~ | ~~낮음~~ | 완료 (happy-dom 도입) |
 
 ## 기술 부채
 
@@ -63,6 +66,9 @@
 | ~~payload-mapper가 블록 ID를 무시하고 동일 파라미터 복사~~ | 2026-04-08 | ~~L~~ 완료 (#82) |
 | ~~정적 JSON 데이터 → PostgreSQL 전환 필요~~ | 2026-04-08 | ~~M~~ 완료 (#74~#76) |
 | ~~PRD 24페이지 구성표에 필요한 데이터 필드 누락~~ | 2026-04-08 | ~~M~~ 완료 (#75 seed) |
+| ContentPagePayload.parameters를 `Record<string, string \| string[]>`로 정식 확장 | 2026-04-09 | M (#88 hack 제거) |
+| CRUD UI에 신규 Json 필드 입력 (retrospective 6필드, portfolioLinks 4필드, project problem/solution/result) | 2026-04-09 | M (v2) |
+| StudentFormDialog/ProjectFormDialog 단위 테스트 (CohortFormDialog와 패턴 동일) | 2026-04-09 | S |
 | pnpm 기준 README 실행 절차를 실제 dev 서버 구동 기준으로 검증 | 2026-04-04 | S |
 
 ## 다음 계획
@@ -82,14 +88,24 @@
 - [x] `#83` 프론트엔드 블록 ID 확장 [M] → depends: #82
 - [x] `#84` EditForm 새 블록 타입 UI [M] → depends: #83
 
-### Epic: 책 프리뷰 렌더러 (#85~#88)
+### Epic: 책 프리뷰 렌더러 (#85~#88) — 완료
 - [x] `#85` 프리뷰 선행 검증 [S] — 독립 (동시 시작 가능)
 - [x] `#86` 템플릿 레이아웃 데이터 정적 저장 [M] → depends: #85
 - [x] `#87` PageRenderer 컴포넌트 [L] → depends: #86
-- [ ] `#88` BookPreview + EditForm 연결 [M] → depends: #87, #82
+- [x] `#88` BookPreview + EditForm 연결 [M] → depends: #87, #82
 
-### 배포
+### Epic: CRUD 관리 UI — 완료 (PRD 없는 즉흥 작업)
+- [x] CohortFormDialog/CohortAdminPanel + 대시보드 배치
+- [x] StudentFormDialog/StudentAdminPanel/StudentEditDeletePanel + 기수·수료생 상세 배치
+- [x] ProjectFormDialog/ProjectAdminPanel + 수료생 상세 배치
+- [x] api.ts CRUD 9개 함수 + 공통 헬퍼
+- [x] form-fields/ConfirmDeleteDialog 공통 컴포넌트
+- [x] QA 44개 테스트
+
+### 배포 — 미진행
 - [ ] `#68` Vercel + Railway 프로덕션 배포 [M] → depends: #76
+  - **상태:** 미진행. 이번 사이클에서는 로컬 + Docker Compose 실행만 검증.
+  - 의존성(#76 DB 전환, #74 Docker Compose)은 모두 완료되어 있어 작업 자체는 가능하나, 시연·평가 흐름을 위한 단일 PR 마무리가 우선이라 후순위로 둠.
 
 ### 미머지 PR (기존)
 - [x] `#67` 구조화 로깅 DoD 완료 — PR 머지 대기
