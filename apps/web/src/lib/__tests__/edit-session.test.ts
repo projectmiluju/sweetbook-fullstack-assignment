@@ -8,6 +8,7 @@ import {
   createDefaultEditSession,
   getBlockIndex,
   getBlockType,
+  getPageDescription,
   getPageLabel,
   isBlockHidden,
   movePage,
@@ -560,6 +561,50 @@ describe("레거시 vs 새 시그니처 차이", () => {
 // ════════════════════════════════════════════════
 // QA 추가 테스트: 대량 프로젝트
 // ════════════════════════════════════════════════
+
+describe("getPageDescription", () => {
+  it("12종 페이지 타입 모두 설명을 반환해야 한다", () => {
+    for (const type of PAGE_BLOCK_TYPES) {
+      const description = getPageDescription(`${type}:0`);
+      expect(description).toBeDefined();
+      expect(description.length).toBeGreaterThan(0);
+    }
+  });
+
+  it("PAGE_TYPE_LABELS와 동일한 12종 키를 가져야 한다 (정합성)", () => {
+    // 모든 PAGE_BLOCK_TYPES가 PAGE_TYPE_LABELS와 PAGE_TYPE_DESCRIPTIONS 양쪽에 있어야 한다
+    for (const type of PAGE_BLOCK_TYPES) {
+      expect(PAGE_TYPE_LABELS[type]).toBeDefined();
+      expect(PAGE_TYPE_LABELS[type].length).toBeGreaterThan(0);
+      // getPageDescription이 빈 문자열이 아닌 의미 있는 값을 반환해야 한다
+      const desc = getPageDescription(`${type}:0`);
+      expect(desc).not.toBe("");
+      expect(desc).not.toBe("기타 페이지");
+    }
+  });
+
+  it("certificate 페이지는 수료 관련 설명을 반환해야 한다", () => {
+    expect(getPageDescription("certificate:0")).toContain("수료");
+  });
+
+  it("project-detail 페이지는 문제·해결 관련 설명을 반환해야 한다", () => {
+    const desc = getPageDescription("project-detail:0");
+    expect(desc).toContain("문제");
+    expect(desc).toContain("해결");
+  });
+
+  it("레거시 project 블록은 폴백 설명을 반환해야 한다", () => {
+    expect(getPageDescription("project:0")).toBe("프로젝트 정보");
+  });
+
+  it("레거시 photo 블록은 폴백 설명을 반환해야 한다", () => {
+    expect(getPageDescription("photo:0")).toBe("활동 사진");
+  });
+
+  it("알 수 없는 타입은 '기타 페이지'를 반환해야 한다", () => {
+    expect(getPageDescription("unknown-type:0")).toBe("기타 페이지");
+  });
+});
 
 describe("대량 프로젝트 시나리오", () => {
   it("프로젝트 10개이면 project-summary/detail이 각 10개씩 있어야 한다", () => {
