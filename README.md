@@ -143,9 +143,18 @@ pnpm dev:web
 | `GET` | `/health` | 서버 상태 확인 |
 | `GET` | `/api/cohorts` | 기수 목록 조회 |
 | `GET` | `/api/cohorts/:id` | 기수 상세 + 수료생 목록 조회 |
+| `POST` | `/api/cohorts` | 기수 생성 |
+| `PATCH` | `/api/cohorts/:id` | 기수 수정 |
+| `DELETE` | `/api/cohorts/:id` | 기수 삭제 (Cascade) |
 | `GET` | `/api/students/:id` | 수료생 포트폴리오 상세 조회 |
+| `POST` | `/api/cohorts/:cohortId/students` | 수료생 추가 |
+| `PATCH` | `/api/students/:id` | 수료생 수정 |
+| `DELETE` | `/api/students/:id` | 수료생 삭제 (Cascade) |
+| `POST` | `/api/students/:studentId/projects` | 프로젝트 추가 |
+| `PATCH` | `/api/projects/:id` | 프로젝트 수정 |
+| `DELETE` | `/api/projects/:id` | 프로젝트 삭제 |
 | `GET` | `/api/credits` | 잔액 조회 프록시 |
-| `POST` | `/api/books` | 책 생성 오케스트레이션 (4단계) |
+| `POST` | `/api/books` | 책 생성 오케스트레이션 (4단계, DB 조회) |
 | `POST` | `/api/orders` | 주문 생성 프록시 |
 
 ## AI 도구 사용 내역

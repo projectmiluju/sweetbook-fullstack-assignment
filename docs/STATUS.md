@@ -1,11 +1,12 @@
 # 프로젝트 현황
 
-**최종 업데이트:** 2026-04-08 (PRD 3개 승인 + 이슈 분해)
+**최종 업데이트:** 2026-04-08 (DB 도입 Epic 완료)
 **현재 버전:** v0.1.0
 **배포 URL:** 없음
 
 ## 최근 변경
 
+- **DB 도입 Epic 완료 (#74~#80):** PostgreSQL 16 + Prisma ORM 도입, Docker Compose DB 서비스 추가, seed 스크립트(2기수/3수료생/5프로젝트 + 신규 필드 더미), GET 3개 엔드포인트 DB 전환, Cohort/Student/Project CRUD 9개 엔드포인트 추가, orchestrate-book DB 연동. ADR-007 작성. README 갱신(DATABASE_URL, prisma 폴더, DB 실행 절차, 기술 스택).
 - **PRD 3개 승인 + 이슈 15개 생성:** 내지 콘텐츠 매핑 개선(`content-page-mapping-improvement.md`), PostgreSQL+Prisma DB 도입(`database-prisma-migration.md`), 책 프리뷰 렌더러(`book-preview-renderer.md`). #74~#88 이슈 생성, #68 업데이트. ADR-007(DB), ADR-008(프리뷰) 작성.
 - **SweetBook API 템플릿 조사 완료:** A4 SC 판형 24개 템플릿의 파라미터 확인. 내지a(텍스트+사진), 내지_gallery(콜라주), 내지b(텍스트) 3종을 페이지 타입별로 사용하는 전략 확정. 프리뷰·PDF 엔드포인트 미지원 확인 → 자체 렌더러 결정.
 - **UI 전면 리디자인:** SweetBook → Foliocraft 이름 변경, SKILL.md(Supanova Redesign Engine) 감사 기준 적용. 악센트 브래스→앰버(`#b45309`), 폰트 Geist→Outfit, 배경 베이지→warm stone. 전 18개 페이지/컴포넌트 스타일 전면 교체. 디자인 문서 3개(토큰/컴포넌트/와이어프레임) 현재 코드 기준 재작성. 컴포넌트 테스트 9개 추가(happy-dom). ADR-006 작성. (총 테스트 111개)
@@ -54,20 +55,20 @@
 | 항목 | 등록일 | 예상 작업량 |
 |------|-------|-----------|
 | payload-mapper가 블록 ID를 무시하고 동일 파라미터 복사 | 2026-04-08 | L (#82) |
-| 정적 JSON 데이터 → PostgreSQL 전환 필요 | 2026-04-08 | M (#74~#76) |
-| PRD 24페이지 구성표에 필요한 데이터 필드 누락 (회고 구조화, 프로젝트 상세 등) | 2026-04-08 | M (#75 seed) |
+| ~~정적 JSON 데이터 → PostgreSQL 전환 필요~~ | 2026-04-08 | ~~M~~ 완료 (#74~#76) |
+| ~~PRD 24페이지 구성표에 필요한 데이터 필드 누락~~ | 2026-04-08 | ~~M~~ 완료 (#75 seed) |
 | pnpm 기준 README 실행 절차를 실제 dev 서버 구동 기준으로 검증 | 2026-04-04 | S |
 
 ## 다음 계획
 
-### Epic: DB 도입 (#74~#80)
-- [ ] `#74` Docker Compose PostgreSQL + Prisma 초기 설정 [M]
-- [ ] `#75` Prisma seed 스크립트 [M] → depends: #74
-- [ ] `#76` GET 엔드포인트 DB 조회 전환 [M] → depends: #75
-- [ ] `#77` Cohort CRUD API [M] → depends: #76
-- [ ] `#78` Student CRUD API [M] → depends: #76
-- [ ] `#79` Project CRUD API [S] → depends: #76
-- [ ] `#80` orchestrate-book DB 연동 [S] → depends: #76
+### Epic: DB 도입 (#74~#80) — 완료
+- [x] `#74` Docker Compose PostgreSQL + Prisma 초기 설정
+- [x] `#75` Prisma seed 스크립트
+- [x] `#76` GET 엔드포인트 DB 조회 전환
+- [x] `#77` Cohort CRUD API
+- [x] `#78` Student CRUD API
+- [x] `#79` Project CRUD API
+- [x] `#80` orchestrate-book DB 연동
 
 ### Epic: 내지 콘텐츠 매핑 (#81~#84)
 - [ ] `#81` SweetBook sandbox 선행 검증 [M] — 독립 (동시 시작 가능)
