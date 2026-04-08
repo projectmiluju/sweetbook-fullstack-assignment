@@ -1,4 +1,20 @@
 services:
+  db:
+    image: postgres:16-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: sweetbook
+      POSTGRES_PASSWORD: sweetbook
+      POSTGRES_DB: sweetbook
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sweetbook"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
   api:
     build:
       context: .
@@ -7,6 +23,11 @@ services:
       - "4000:4000"
     env_file:
       - .env
+    environment:
+      DATABASE_URL: postgresql://sweetbook:sweetbook@db:5432/sweetbook
+    depends_on:
+      db:
+        condition: service_healthy
     healthcheck:
       test: ["CMD", "wget", "--spider", "-q", "http://localhost:4000/health"]
       interval: 10s
@@ -28,3 +49,6 @@ services:
     depends_on:
       api:
         condition: service_healthy
+
+volumes:
+  pgdata:
