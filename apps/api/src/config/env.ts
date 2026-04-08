@@ -7,6 +7,11 @@ const envSchema = z.object({
     .transform(Number)
     .pipe(z.number().int().positive()),
 
+  DATABASE_URL: z
+    .string()
+    .url("DATABASE_URL이 유효한 URL이 아닙니다")
+    .optional(),
+
   SWEETBOOK_API_KEY: z.string().min(1, "SWEETBOOK_API_KEY가 비어 있습니다"),
   SWEETBOOK_API_BASE_URL: z
     .string()
