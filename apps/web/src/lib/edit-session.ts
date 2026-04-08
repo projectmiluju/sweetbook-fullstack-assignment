@@ -36,6 +36,36 @@ export const PAGE_TYPE_LABELS: Record<PageBlockType, string> = {
   "blank": "빈 페이지",
 };
 
+export const PAGE_TYPE_DESCRIPTIONS: Record<PageBlockType, string> = {
+  "certificate": "수료생 이름·과정명·축하 문구",
+  "bio": "자기소개와 사진",
+  "tech-stack": "사용한 기술 스택",
+  "project-summary": "프로젝트 제목·요약·기여",
+  "project-detail": "문제·해결·기술 선택·결과",
+  "retrospective": "수료생 회고",
+  "mentor-comment": "멘토 코멘트",
+  "photo-gallery": "활동 사진 콜라주",
+  "cohort-intro": "기수 소개와 운영진 메시지",
+  "thanks": "감사 메시지",
+  "portfolio-links": "GitHub·Blog·프로젝트 링크",
+  "blank": "빈 페이지 (패딩)",
+};
+
+/**
+ * 블록 ID에 대한 짧은 설명 텍스트를 반환한다.
+ * 페이지 타입별 미리보기 용도.
+ */
+export function getPageDescription(blockId: string): string {
+  const type = getBlockType(blockId);
+
+  // 레거시 호환
+  if (type === "project") return "프로젝트 정보";
+  if (type === "photo") return "활동 사진";
+
+  const description = PAGE_TYPE_DESCRIPTIONS[type as PageBlockType];
+  return description ?? "기타 페이지";
+}
+
 // ────────────────────────────────────────────────
 // 세션 타입
 // ────────────────────────────────────────────────
