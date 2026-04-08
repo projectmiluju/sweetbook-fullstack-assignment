@@ -484,12 +484,55 @@ app.post("/api/books", async (request: Request, response: Response) => {
 
   const { SWEETBOOK_API_BASE_URL, SWEETBOOK_API_KEY } = getEnv();
   const client = createSweetBookClient(SWEETBOOK_API_BASE_URL, SWEETBOOK_API_KEY);
+  const db = getPrisma();
+
+  // DB에서 cohort + students + projects 조회하여 Cohort[] 형태로 변환
+  const cohortRow = await db.cohort.findUnique({ where: { id: cohortId } });
+  if (!cohortRow) {
+    response.status(404).json({ message: "기수를 찾을 수 없습니다." });
+    return;
+  }
+  const studentRows = await db.student.findMany({ where: { cohortId }, orderBy: { createdAt: "asc" } });
+  const studentsWithProjects = await Promise.all(
+    studentRows.map(async (s: { id: string; name: string; roleTrack: string; bio: string; techStack: string[]; mentorComment: string; photos: string[]; certificateMessage: string; retrospective: unknown }) => {
+      const projects = await db.project.findMany({ where: { studentId: s.id }, orderBy: { createdAt: "asc" } });
+      return {
+        id: s.id,
+        name: s.name,
+        roleTrack: s.roleTrack,
+        bio: s.bio,
+        techStack: s.techStack,
+        projects: projects.map((p: { title: string; summary: string; contribution: string; links: string[] }) => ({
+          title: p.title,
+          summary: p.summary,
+          contribution: p.contribution,
+          links: p.links,
+        })),
+        retrospective: typeof s.retrospective === "object" && s.retrospective !== null
+          ? (s.retrospective as { difficulty?: string }).difficulty ?? ""
+          : "",
+        mentorComment: s.mentorComment,
+        photos: s.photos,
+        certificateMessage: s.certificateMessage,
+      };
+    })
+  );
+  const cohortsData = [{
+    id: cohortRow.id,
+    name: cohortRow.name,
+    program: cohortRow.program,
+    graduationDate: formatDate(cohortRow.graduationDate),
+    summary: cohortRow.summary,
+    tagline: cohortRow.tagline,
+    students: studentsWithProjects,
+  }];
 
   inProgressKeys.add(idempotencyKey);
   try {
     const result = await orchestrateBook(
       { session, cohortId, studentId, idempotencyKey },
-      client
+      client,
+      cohortsData
     );
     response.json(result);
   } catch (error) {

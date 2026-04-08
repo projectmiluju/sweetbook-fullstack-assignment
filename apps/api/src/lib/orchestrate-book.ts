@@ -1,5 +1,4 @@
 import type { Cohort, StudentPortfolio } from "../data/cohorts.js";
-import { cohorts as allCohorts } from "../data/cohorts.js";
 import { buildCoverPayload, buildContentsPayload } from "./payload-mapper.js";
 import type { EditSessionInput } from "./payload-mapper.js";
 import type { SweetBookClient } from "./sweetbook-api.js";
@@ -30,7 +29,7 @@ export class OrchestrationError extends Error {
 export async function orchestrateBook(
   input: OrchestrationInput,
   client: SweetBookClient,
-  cohortsData: Cohort[] = allCohorts
+  cohortsData: Cohort[]
 ): Promise<OrchestrationResult> {
   const { session, cohortId, studentId, idempotencyKey: key } = input;
 
