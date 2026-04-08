@@ -1,11 +1,12 @@
 # 프로젝트 현황
 
-**최종 업데이트:** 2026-04-08 (#82 페이지 타입 매핑 구현)
+**최종 업데이트:** 2026-04-08 (#83 프론트엔드 블록 ID 확장)
 **현재 버전:** v0.1.0
 **배포 URL:** 없음
 
 ## 최근 변경
 
+- **#83 프론트엔드 블록 ID 확장:** edit-session.ts에 PageBlockType 12종 + buildBlockId + getPageLabel 중앙화 + buildDefaultPages PRD 구성표 기반 리팩토링 (individual/cohort-showcase 분기). 레거시 시그니처 하위 호환 유지. EditForm.tsx 호출부 새 시그니처 전환. 테스트 148개(+17), 린트/타입체크 통과.
 - **#82 페이지 타입 매핑 구현:** payload-mapper 전면 리팩토링. PageType 12종 정의, 페이지별 다른 templateUid+parameters 생성(접근법 A: 내지b/내지a/내지_gallery 3종 템플릿). 인터페이스 확장(ProjectSummary·StudentPortfolio·Cohort에 PRD 신규 필드), DB 변환 로직 수정, 환경변수 2개 추가(CONTENT_A_TEMPLATE_UID, GALLERY_TEMPLATE_UID). QA에서 certificateMessage 빈 문자열 fallback 버그 발견·수정. 테스트 154개(+33), 빌드/타입체크 통과.
 - **DB 도입 Epic 완료 (#74~#80):** PostgreSQL 16 + Prisma ORM 도입, Docker Compose DB 서비스 추가, seed 스크립트(2기수/3수료생/5프로젝트 + 신규 필드 더미), GET 3개 엔드포인트 DB 전환, Cohort/Student/Project CRUD 9개 엔드포인트 추가, orchestrate-book DB 연동. ADR-007 작성. README 갱신(DATABASE_URL, prisma 폴더, DB 실행 절차, 기술 스택).
 - **PRD 3개 승인 + 이슈 15개 생성:** 내지 콘텐츠 매핑 개선(`content-page-mapping-improvement.md`), PostgreSQL+Prisma DB 도입(`database-prisma-migration.md`), 책 프리뷰 렌더러(`book-preview-renderer.md`). #74~#88 이슈 생성, #68 업데이트. ADR-007(DB), ADR-008(프리뷰) 작성.
@@ -74,7 +75,7 @@
 ### Epic: 내지 콘텐츠 매핑 (#81~#84)
 - [ ] `#81` SweetBook sandbox 선행 검증 [M] — 독립 (동시 시작 가능)
 - [x] `#82` payload-mapper 페이지별 매핑 [L] → depends: #76, #81
-- [ ] `#83` 프론트엔드 블록 ID 확장 [M] → depends: #82
+- [x] `#83` 프론트엔드 블록 ID 확장 [M] → depends: #82
 - [ ] `#84` EditForm 새 블록 타입 UI [M] → depends: #83
 
 ### Epic: 책 프리뷰 렌더러 (#85~#88)
