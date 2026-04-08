@@ -50,7 +50,7 @@ SweetBook 템플릿의 `layout` 데이터는 각 요소의 **절대 좌표(x, y)
 | `photo` | `<img>` with `object-fit: cover` | position, width, height, fileName(→src), fit, cornerRadius |
 | `graphic` | `<img>` (스티커 이미지) | position, width, height, imageSource, opacity |
 | `rectangle` | `<div>` with background-color | position, width, height, color |
-| `collageGallery` | `<div>` with CSS grid/flex | position, width, height, 사진 배열 |
+| `collageGallery` | `<div>` with CSS grid (사진 수별 정적 규칙) | position, width, height, 사진 배열. SweetBook은 `layout:"auto"` 블랙박스이므로 자체 그리드 규칙 적용 (1장: 1col, 2장: 2col, 3-4장: 2x2, 5+: 3col auto-row, gap: 10px) |
 
 ### 2.4 텍스트 파라미터 치환
 
@@ -118,9 +118,14 @@ const style = {
 /api_platform_image/public/image260312122639465.PNG
 ```
 
-이 경로가 외부 접근 가능한지 확인 필요. 불가능하면:
-- CSS로 유사한 시각 요소(세로 띠, 별 아이콘)를 대체
-- 또는 해당 영역을 단색 배경으로 처리
+**확정: 외부 접근 불가** (#85 검증 — sandbox→production 301→404, auth 헤더 무관). 모든 graphic 요소를 CSS `<div>` + 단색 배경(`#8B7D6B` 토프 계열)으로 대체한다.
+
+| 영향 요소 | 대체 |
+|---------|------|
+| 내지b/내지_gallery `divider` (203 × 1212, 좌측 세로 띠) | `<div>` 단색 배경 |
+| 표지 `back-star` (뒷표지 별 모양) | `<div>` 단색 배경 또는 생략 |
+
+`templates.ts`에는 graphic 요소를 그대로 저장하되, `GraphicElement` 컴포넌트에서 `imageSource`를 무시하고 fallback 색상만 사용한다.
 
 ### 3.5 프리뷰 UI 구성
 
@@ -200,11 +205,13 @@ export const TEMPLATES = {
 
 ## 5. 선행 검증 항목
 
-| # | 검증 항목 | 방법 |
-|---|----------|------|
-| 1 | 그래픽 이미지 외부 접근 | `curl https://api-sandbox.sweetbook.com/api_platform_image/public/image260312122639465.PNG` |
-| 2 | Google Fonts에 배달의민족 도현 존재 | Google Fonts 검색 (`Do Hyeon`) |
-| 3 | collageGallery 렌더링 규칙 | flow.columns, columnGap 값에 따른 그리드 배치 |
+#85에서 sandbox API와 Google Fonts에 직접 호출하여 검증 완료. 결과는 `docs/devlog/2026-04-08-issue-85-preview-verification.md` 참조.
+
+| # | 검증 항목 | 결과 | 결론 |
+|---|----------|------|------|
+| 1 | 그래픽 이미지 외부 접근 | ❌ 301→404 | CSS 단색 div fallback (§3.4) |
+| 2 | Google Fonts 6종 (Do Hyeon, Nanum Myeongjo, DM Serif Display, Nanum Gothic, Oswald, Roboto) | ✅ 모두 200 | 그대로 사용 (§3.3) |
+| 3 | collageGallery 렌더링 규칙 | ⚠️ `layout:"auto"` 블랙박스 (PRD가 가정한 `flow.columns` 미존재) | 사진 수별 정적 그리드 규칙 (§2.3) |
 
 ## 6. 예외 처리
 
