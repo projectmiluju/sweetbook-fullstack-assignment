@@ -11,6 +11,7 @@ import {
   buildPhotoBlockId,
   buildProjectBlockId,
   createDefaultEditSession,
+  getPageLabel as getPageLabelUtil,
   isBlockHidden,
   movePage,
   toggleHiddenBlock
@@ -48,7 +49,7 @@ interface EditFormProps {
 export default function EditForm({ bookType, studentName, cohortId, studentId, projects, photos }: EditFormProps) {
   const [session, setSession] = useState<EditSession>(() => ({
     ...createDefaultEditSession(bookType, studentName),
-    pages: buildDefaultPages(projects.length, photos.length)
+    pages: buildDefaultPages({ projectCount: projects.length, photoCount: photos.length, bookType })
   }));
   const [bookStatus, setBookStatus] = useState<BookCreateStatus>("idle");
   const [bookUid, setBookUid] = useState<string | null>(null);
@@ -80,17 +81,8 @@ export default function EditForm({ bookType, studentName, cohortId, studentId, p
   }
 
   function getPageLabel(pageId: string): string {
-    const projectMatch = /^project:(\d+)$/.exec(pageId);
-    if (projectMatch) {
-      const idx = parseInt(projectMatch[1], 10);
-      return projects[idx]?.title ?? `프로젝트 ${idx + 1}`;
-    }
-    const photoMatch = /^photo:(\d+)$/.exec(pageId);
-    if (photoMatch) {
-      const idx = parseInt(photoMatch[1], 10);
-      return `사진 ${idx + 1}`;
-    }
-    return pageId;
+    const projectTitles = projects.map((p) => p.title);
+    return getPageLabelUtil(pageId, projectTitles);
   }
 
   function handleMovePage(index: number, direction: "up" | "down") {
