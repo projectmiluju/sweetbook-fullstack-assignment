@@ -7,6 +7,26 @@ export interface ProjectSummary {
   summary: string;
   contribution: string;
   links: string[];
+  problem?: string;
+  solution?: string;
+  techChoices?: string[];
+  result?: string;
+}
+
+export interface RetrospectiveData {
+  before?: string;
+  process?: string;
+  turning?: string;
+  difficulty?: string;
+  overcome?: string;
+  learned?: string;
+}
+
+export interface PortfolioLinks {
+  github?: string;
+  blog?: string;
+  email?: string;
+  demo?: string;
 }
 
 export interface StudentPortfolio {
@@ -16,10 +36,14 @@ export interface StudentPortfolio {
   bio: string;
   techStack: string[];
   projects: ProjectSummary[];
-  retrospective: string;
+  retrospective: string | RetrospectiveData;
   mentorComment: string;
   photos: string[];
   certificateMessage: string;
+  interests?: string[];
+  achievements?: string;
+  portfolioLinks?: PortfolioLinks;
+  thanksMessage?: string;
 }
 
 export interface Cohort {
@@ -30,6 +54,9 @@ export interface Cohort {
   summary: string;
   tagline: string;
   students: StudentPortfolio[];
+  operatorMessage?: string;
+  philosophy?: string;
+  photos?: string[];
 }
 
 const __dirname = dirname(fileURLToPath(import.meta.url));

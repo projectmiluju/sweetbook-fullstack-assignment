@@ -26,6 +26,12 @@ const envSchema = z.object({
   CONTENT_TEMPLATE_UID: z
     .string()
     .min(1, "CONTENT_TEMPLATE_UID가 비어 있습니다"),
+  CONTENT_A_TEMPLATE_UID: z
+    .string()
+    .min(1, "CONTENT_A_TEMPLATE_UID가 비어 있습니다"),
+  GALLERY_TEMPLATE_UID: z
+    .string()
+    .min(1, "GALLERY_TEMPLATE_UID가 비어 있습니다"),
 });
 
 export type Env = z.infer<typeof envSchema>;
