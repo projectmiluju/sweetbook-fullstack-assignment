@@ -1,4 +1,6 @@
 @import url("https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap");
+/* SweetBook 프리뷰 렌더러 — 6종 폰트 (PRD §3.3, #85 검증) */
+@import url("https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Do+Hyeon&family=Nanum+Gothic&family=Nanum+Myeongjo&family=Oswald&family=Roboto&display=swap");
 @import "tailwindcss";
 
 :root {
