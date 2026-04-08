@@ -1,11 +1,12 @@
 # 프로젝트 현황
 
-**최종 업데이트:** 2026-04-08 (#86 프리뷰 템플릿 데이터 정적 저장)
+**최종 업데이트:** 2026-04-08 (#87 PageRenderer + 5종 element 컴포넌트)
 **현재 버전:** v0.1.0
 **배포 URL:** 없음
 
 ## 최근 변경
 
+- **#87 PageRenderer + 5종 element 컴포넌트:** `apps/web/src/components/preview/`에 PageRenderer.tsx + elements/ 5종(Text/Photo/Graphic/Rectangle/Collage) + utils/ 3종(color ARGB→rgba, font 매핑, scale). globals.css에 6종 Google Fonts 단일 import 추가. GraphicElement는 #85 결정대로 imageSource 무시하고 단색 div fallback. CollageElement는 사진 수별 정적 grid 규칙. QA에서 색상 변환 DOM 반영 + GraphicElement img 태그 회귀 방지 + PageRenderer 비정상 입력 방어 테스트 추가. 테스트 305개(+77).
 - **#86 프리뷰 템플릿 데이터 정적 저장:** `apps/web/src/components/preview/` 신규 디렉토리. types.ts(5종 element discriminated union), constants.ts(PAGE_WIDTH/HEIGHT, GRAPHIC_FALLBACK_COLOR), templates.ts(4개 템플릿 정적 저장 — cover/contentB/contentA/gallery), param-substitute.ts(`$$key$$` 치환 유틸). QA에서 templates.ts ↔ payload-mapper 파라미터 8종 정합성 테스트 추가 — #87 구현 시 가정 일치 보장. 테스트 228개(+37).
 - **#85 책 프리뷰 선행 검증:** 3개 외부 의존성 확인. (1) 그래픽 이미지(`/api_platform_image/...`) 외부 접근 **불가** → CSS 단색 div 대체 결정. (2) Google Fonts 6종(Do Hyeon, Nanum Myeongjo, DM Serif Display 등) 모두 **가용**. (3) collageGallery는 PRD가 가정한 `flow.columns` 대신 `layout:"auto"` 블랙박스 — 사진 수별 정적 그리드 규칙으로 fallback. `/v1/templates/{uid}` 엔드포인트는 정상 동작 확인되어 #86 templates.ts 정적 저장 가능.
 - **#84 EditForm 새 블록 타입 UI:** PageBlockList 공통 컴포넌트 추출 (라벨 + 설명 + 토글 + 순서 변경 통합). EditForm의 레거시 토글 섹션 2개 + 페이지 순서 섹션을 PageBlockList 1개로 통합 (~80줄 단순화). CohortEditForm에 페이지 섹션 신규 추가. **#83 머지 후 발생한 회귀 버그 수정**: EditForm 토글이 레거시 ID(`project:N`)를 사용해 새 ID(`project-summary:N`)와 매칭 안 되던 문제 해결. getPageDescription 헬퍼 + PAGE_TYPE_DESCRIPTIONS 상수. 테스트 173개(+25), 린트/타입체크 통과.
@@ -84,7 +85,7 @@
 ### Epic: 책 프리뷰 렌더러 (#85~#88)
 - [x] `#85` 프리뷰 선행 검증 [S] — 독립 (동시 시작 가능)
 - [x] `#86` 템플릿 레이아웃 데이터 정적 저장 [M] → depends: #85
-- [ ] `#87` PageRenderer 컴포넌트 [L] → depends: #86
+- [x] `#87` PageRenderer 컴포넌트 [L] → depends: #86
 - [ ] `#88` BookPreview + EditForm 연결 [M] → depends: #87, #82
 
 ### 배포
