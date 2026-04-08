@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 
 import { BackLink } from "@/components/BackLink";
 import { EmptyState } from "@/components/EmptyState";
+import StudentAdminPanel from "@/components/admin/StudentAdminPanel";
 import { getCohort } from "@/lib/api";
 
 export const dynamic = "force-dynamic";
@@ -112,6 +113,10 @@ export default async function CohortDetailPage({ params }: CohortDetailPageProps
             </div>
           </Link>
         ))}
+      </section>
+
+      <section className="mt-10">
+        <StudentAdminPanel cohortId={cohort.id} students={cohort.students} />
       </section>
     </main>
   );

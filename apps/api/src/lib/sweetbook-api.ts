@@ -106,7 +106,24 @@ export function createSweetBookClient(
       const form = new FormData();
       form.append("templateUid", payload.templateUid);
       if (Object.keys(payload.parameters).length > 0) {
-        form.append("parameters", JSON.stringify(payload.parameters));
+        // collageGallery 파라미터(예: collagePhotos)는 payload-mapper에서
+        // JSON 문자열로 들어오는데, 그대로 stringify하면 이중 인코딩되어
+        // SweetBook이 빈 배열로 인식한다. JSON 문자열이면 parse해서 객체로 풀어준다.
+        const params: Record<string, unknown> = { ...payload.parameters };
+        for (const key of Object.keys(params)) {
+          const value = params[key];
+          if (typeof value === "string" && value.startsWith("[") && value.endsWith("]")) {
+            try {
+              const parsed: unknown = JSON.parse(value);
+              if (Array.isArray(parsed)) {
+                params[key] = parsed;
+              }
+            } catch {
+              // JSON이 아닌 문자열이면 그대로 둠
+            }
+          }
+        }
+        form.append("parameters", JSON.stringify(params));
       }
       const response = await fetch(`${baseUrl}/books/${bookUid}/contents`, {
         method: "POST",

@@ -2,9 +2,30 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { BackLink } from "@/components/BackLink";
+import ProjectAdminPanel from "@/components/admin/ProjectAdminPanel";
+import StudentEditDeletePanel from "@/components/admin/StudentEditDeletePanel";
 import { getStudent } from "@/lib/api";
+import type { ProjectRecord, RetrospectiveData } from "@/lib/api";
 
 export const dynamic = "force-dynamic";
+
+/**
+ * 회고 데이터를 표시용 텍스트로 변환한다.
+ * 백엔드는 string(레거시) 또는 6필드 객체(#82 이후)로 반환한다.
+ */
+function formatRetrospective(retro: string | RetrospectiveData): string {
+  if (typeof retro === "string") return retro;
+
+  const sections: string[] = [];
+  if (retro.before) sections.push(retro.before);
+  if (retro.process) sections.push(retro.process);
+  if (retro.turning) sections.push(retro.turning);
+  if (retro.difficulty) sections.push(retro.difficulty);
+  if (retro.overcome) sections.push(retro.overcome);
+  if (retro.learned) sections.push(retro.learned);
+
+  return sections.join(" ");
+}
 
 interface StudentDetailPageProps {
   params: Promise<{ studentId: string }>;
@@ -23,7 +44,12 @@ export default async function StudentDetailPage({ params }: StudentDetailPagePro
       <BackLink href="/dashboard">대시보드로 돌아가기</BackLink>
 
       <section className="mt-5 animate-fade-up overflow-hidden rounded-2xl border border-[color:var(--border-soft)] bg-[color:var(--surface)] px-6 py-10 shadow-[0_2px_16px_var(--shadow-tint)] sm:px-8">
-        <p className="text-xs font-semibold tracking-[0.25em] text-[color:var(--accent)] uppercase">{student.roleTrack}</p>
+        <div className="flex items-start justify-between gap-4">
+          <p className="text-xs font-semibold tracking-[0.25em] text-[color:var(--accent)] uppercase">{student.roleTrack}</p>
+          {student.cohortId && (
+            <StudentEditDeletePanel student={student} cohortId={student.cohortId} />
+          )}
+        </div>
         <div className="mt-5 grid gap-8 lg:grid-cols-[minmax(0,1fr)_260px] lg:items-end">
           <div>
             <h1 className="font-display text-3xl font-bold leading-tight tracking-tight text-[color:var(--foreground)] md:text-5xl">{student.name}</h1>
@@ -79,7 +105,7 @@ export default async function StudentDetailPage({ params }: StudentDetailPagePro
           <article className="animate-fade-up delay-3 rounded-2xl rounded-l-none border-l-2 border-[color:var(--accent)] bg-[color:var(--surface)] px-6 py-6 shadow-[0_2px_16px_var(--shadow-tint)]">
             <p className="text-[10px] font-semibold tracking-[0.2em] text-[color:var(--accent)] uppercase">회고</p>
             <p className="font-display mt-4 text-lg font-medium leading-8 text-[color:var(--text-default)]">
-              &ldquo;{student.retrospective}&rdquo;
+              &ldquo;{formatRetrospective(student.retrospective)}&rdquo;
             </p>
           </article>
 
@@ -118,6 +144,17 @@ export default async function StudentDetailPage({ params }: StudentDetailPagePro
             책 종류 선택하기 <span>&rarr;</span>
           </Link>
         </aside>
+      </section>
+
+      <section className="mt-10">
+        <ProjectAdminPanel
+          studentId={student.id}
+          projects={
+            student.projects.filter(
+              (p): p is ProjectRecord => typeof p.id === "string"
+            ) as ProjectRecord[]
+          }
+        />
       </section>
     </main>
   );

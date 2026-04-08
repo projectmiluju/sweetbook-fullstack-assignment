@@ -14,11 +14,13 @@ import {
 } from "@/lib/edit-session";
 import type { EditSession } from "@/lib/edit-session";
 import PageBlockList from "@/components/PageBlockList";
+import BookPreview from "@/components/preview/BookPreview";
 
 type BookCreateStatus = "idle" | "loading" | "success" | "error";
 type OrderStatus = "idle" | "loading" | "success" | "error";
 
 const TEXT = {
+  preview: "프리뷰 보기",
   complete: "편집 완료",
   loading: "책 생성 중...",
   retry: "다시 시도",
@@ -60,6 +62,7 @@ export default function EditForm({ bookType, studentName, cohortId, studentId, p
   const [orderStatus, setOrderStatus] = useState<OrderStatus>("idle");
   const [orderUid, setOrderUid] = useState<string | null>(null);
   const [orderErrorMessage, setOrderErrorMessage] = useState<string | null>(null);
+  const [previewOpen, setPreviewOpen] = useState(false);
 
   const bookTypeInfo = BOOK_TYPE_LABELS[bookType];
 
@@ -169,7 +172,23 @@ export default function EditForm({ bookType, studentName, cohortId, studentId, p
           onToggle={handleToggleBlock}
           onMove={handleMovePage}
         />
+
+        <button
+          type="button"
+          onClick={() => setPreviewOpen(true)}
+          className="inline-flex w-full items-center justify-center rounded-xl border border-[color:var(--accent)]/30 bg-[color:var(--surface)] px-6 py-2.5 text-sm font-semibold text-[color:var(--accent)] hover:bg-[color:var(--accent-soft)]"
+        >
+          {TEXT.preview}
+        </button>
       </div>
+
+      <BookPreview
+        isOpen={previewOpen}
+        onClose={() => setPreviewOpen(false)}
+        session={session}
+        cohortId={cohortId}
+        studentId={studentId}
+      />
 
       {bookStatus === "success" && bookUid ? (
         <div className="mt-6 space-y-3">
